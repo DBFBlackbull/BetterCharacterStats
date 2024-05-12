@@ -141,9 +141,17 @@ function BCS:GetHitRating(hitOnly)
 		for line=1, MAX_LINES do
 			local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
 			if left:GetText() then
-				-- rogues
+				-- rogues, paladins
 				local _,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee weapons by (%d)%%."])
 				local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
+				if value and rank > 0 then
+					hit = hit + tonumber(value)
+					line = MAX_LINES
+				end
+
+				-- shamans
+				_,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
+				name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
 				if value and rank > 0 then
 					hit = hit + tonumber(value)
 					line = MAX_LINES
@@ -178,7 +186,7 @@ function BCS:GetHitRating(hitOnly)
 			for line=1, MAX_LINES do
 				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
 				if left:GetText() then
-					-- rogues
+					-- rogues, paladins
 					local _,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee weapons by (%d)%%."])
 					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
 					if value and rank > 0 then
@@ -187,6 +195,20 @@ function BCS:GetHitRating(hitOnly)
 						Cache_GetHitRating_Tab = tab
 						Cache_GetHitRating_Talent = talent
 						
+						line = MAX_LINES
+						talent = MAX_TALENTS
+						tab = MAX_TABS
+					end
+
+					-- shamans
+					_,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
+					name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
+					if value and rank > 0 then
+						hit = hit + tonumber(value)
+
+						Cache_GetHitRating_Tab = tab
+						Cache_GetHitRating_Talent = talent
+
 						line = MAX_LINES
 						talent = MAX_TALENTS
 						tab = MAX_TABS
@@ -315,7 +337,7 @@ function BCS:GetSpellHitRating()
 					
 					-- Arcane Focus
 					_,_, value = strfind(left:GetText(), L["Reduces the chance that the opponent can resist your Arcane spells by (%d+)%%."])
-					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
+					name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
 					if value and rank > 0 then
 						hit_arcane = hit_arcane + tonumber(value)
 						line = MAX_LINES
@@ -324,9 +346,18 @@ function BCS:GetSpellHitRating()
 					-- Priest
 					-- Shadow Focus
 					_,_, value = strfind(left:GetText(), L["Reduces your target's chance to resist your Shadow spells by (%d+)%%."])
-					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
+					name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
 					if value and rank > 0 then
 						hit_shadow = hit_shadow + tonumber(value)
+						line = MAX_LINES
+					end
+
+					-- Shaman
+					-- Nature's Guidance
+					_,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
+					name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
+					if value and rank > 0 then
+						hit = hit + tonumber(value)
 						line = MAX_LINES
 					end
 				end	
