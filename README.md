@@ -1,7 +1,4 @@
-BetterCharacterStats - a World of Warcraft (1.12.1) AddOn
-===================================================
-
-**THIS IS A FORK FIXES SHAMAN HIT CHANCE FROM TALENTS!**
+# BetterCharacterStats - a World of Warcraft (1.12.1) AddOn
 
 ![preview](https://raw.githubusercontent.com/yutsuku/BetterCharacterStats/gh-pages/images/BetterCharacterStats.png)
 
@@ -31,3 +28,9 @@ Known Issues:
 
 Thanks to:
 - All people who keeps reporting to me that some things are missing or are broken.
+
+## Changelog
+- 1.11
+  - Original Fork from yutsuku/BetterCharacterStats
+- 1.12
+  - Reads Melee and Spell hit from Nature's Guideance talent	
