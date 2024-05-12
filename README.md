@@ -1,6 +1,8 @@
 BetterCharacterStats - a World of Warcraft (1.12.1) AddOn
 ===================================================
 
+**THIS IS A FORK FIXES SHAMAN HIT RATING!**
+
 ![preview](https://raw.githubusercontent.com/yutsuku/BetterCharacterStats/gh-pages/images/BetterCharacterStats.png)
 
 Installation:
