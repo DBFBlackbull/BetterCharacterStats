@@ -141,7 +141,8 @@ function BCS:GetHitRating(hitOnly)
 		for line=1, MAX_LINES do
 			local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
 			if left:GetText() then
-				-- rogues, paladins
+				-- Rogues, Paladins
+				-- Precision
 				local _,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee weapons by (%d)%%."])
 				local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
 				if value and rank > 0 then
@@ -149,15 +150,17 @@ function BCS:GetHitRating(hitOnly)
 					line = MAX_LINES
 				end
 
-				-- shamans
+				-- Shamans
+				-- Nature's Guidance
 				local _,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
 				local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
 				if value and rank > 0 then
 					hit = hit + tonumber(value)
 					line = MAX_LINES
 				end
-				
-				-- hunters
+
+				-- Hunters
+				-- Surefooted
 				local _,_, value = strfind(left:GetText(), L["Increases hit chance by (%d)%% and increases the chance movement impairing effects will be resisted by an additional %d+%%."])
 				local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
 				if value and rank > 0 then
