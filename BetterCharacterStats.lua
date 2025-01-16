@@ -254,7 +254,7 @@ function BCS:SetDamage(statFrame)
 	local speed, offhandSpeed = UnitAttackSpeed("player")
 	
 	local minDamage
-	local maxDamage 
+	local maxDamage
 	local minOffHandDamage
 	local maxOffHandDamage 
 	local physicalBonusPos
@@ -375,7 +375,16 @@ function BCS:SetAttackPower(statFrame)
 	label:SetText(TEXT(ATTACK_POWER_COLON))
 
 	PaperDollFormatStat(MELEE_ATTACK_POWER, base, posBuff, negBuff, frame, text)
-	frame.tooltipSubtext = format(MELEE_ATTACK_POWER_TOOLTIP, max((base+posBuff+negBuff), 0)/ATTACK_POWER_MAGIC_NUMBER)
+	frame.tooltipSubtext = format(L["ATTACK_POWER_TOOLTIP"], "melee", max(0,base + posBuff + negBuff)/ATTACK_POWER_MAGIC_NUMBER);
+	frame:SetScript("OnEnter", function()
+		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
+		GameTooltip:SetText(this.tooltip)
+		GameTooltip:AddLine(this.tooltipSubtext)
+		GameTooltip:Show()
+	end)
+	frame:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
 end
 
 function BCS:SetSpellPower(statFrame, school)
@@ -811,7 +820,16 @@ function BCS:SetRangedAttackPower(statFrame)
 
 	local base, posBuff, negBuff = UnitRangedAttackPower("player")
 	PaperDollFormatStat(RANGED_ATTACK_POWER, base, posBuff, negBuff, frame, text)
-	frame.tooltipSubtext = format(RANGED_ATTACK_POWER_TOOLTIP, base/ATTACK_POWER_MAGIC_NUMBER)
+	frame.tooltipSubtext = format(L["ATTACK_POWER_TOOLTIP"], "ranged", max(0,base + posBuff + negBuff)/ATTACK_POWER_MAGIC_NUMBER);
+	frame:SetScript("OnEnter", function()
+		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
+		GameTooltip:SetText(this.tooltip)
+		GameTooltip:AddLine(this.tooltipSubtext)
+		GameTooltip:Show()
+	end)
+	frame:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
 end
 
 function BCS:UpdatePaperdollStats(prefix, index)

@@ -83,8 +83,9 @@ BCS["L"] = {
 	["Holy spell critical hit chance increased by (%d+)%%."] = "Holy spell critical hit chance increased by (%d+)%%.",
 	["Destruction spell critical hit chance increased by (%d+)%%."] = "Destruction spell critical hit chance increased by (%d+)%%.",
 	["Critical strike chance with spells and melee attacks increased by (%d+)%%."] = "Critical strike chance with spells and melee attacks increased by (%d+)%%.",
-	
-	
+
+	["ATTACK_POWER_TOOLTIP"] = "Increase damage with %s weapons by\r\n %.1f damage per second.",
+
 	["MELEE_HIT_TOOLTIP"] = [[|cffffffffHit|r
 	Result of an attack made with 
 	melee or ranged weapons.]],

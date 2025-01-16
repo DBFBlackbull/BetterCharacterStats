@@ -33,4 +33,6 @@ Thanks to:
 - 1.11
   - Original Fork from yutsuku/BetterCharacterStats
 - 1.12
-  - Reads Melee and Spell hit from Nature's Guideance talent	
+  - Reads Melee and Spell hit from Nature's Guideance talent
+- 1.12.1
+  - Fixed melee and ranged attack power tooltip
