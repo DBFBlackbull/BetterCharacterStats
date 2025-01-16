@@ -9,7 +9,6 @@ BCS.PLAYERSTAT_DROPDOWN_OPTIONS = {
 	"PLAYERSTAT_MELEE_COMBAT",
 	"PLAYERSTAT_RANGED_COMBAT",
 	"PLAYERSTAT_SPELL_COMBAT",
-	"PLAYERSTAT_SPELL_SCHOOLS",
 	"PLAYERSTAT_DEFENSES",
 }
 
@@ -392,39 +391,26 @@ function BCS:SetSpellPower(statFrame, school)
 	local text = getglobal(statFrame:GetName() .. "StatText")
 	local label = getglobal(statFrame:GetName() .. "Label")
 	
-	local colorPos = "|cff20ff20"
-	local colorNeg = "|cffff2020"
-	
-	if school then
-		label:SetText(L["SPELL_SCHOOL_"..strupper(school)])
-		local base = BCS:GetSpellPower()
-		local fromSchool = BCS:GetSpellPower(school)
-		local output = base + fromSchool
-		
-		if fromSchool > 0 then
-			output = colorPos .. output .. "|r"
-		end
-		
-		text:SetText(output)
-	else
-		local power, secondaryPower, secondaryName = BCS:GetSpellPower()
-		
-		label:SetText(L.SPELL_POWER_COLON)
-		text:SetText(power+secondaryPower)
-		
-		if secondaryPower > 0 then
-			frame.tooltip = format(L.SPELL_POWER_SECONDARY_TOOLTIP, (power+secondaryPower), power, secondaryPower, secondaryName)
-			frame:SetScript("OnEnter", function()
-				GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-				GameTooltip:SetText(this.tooltip)
-				GameTooltip:Show()
-			end)
-			frame:SetScript("OnLeave", function()
-				GameTooltip:Hide()
-			end)
-		end
-		
-	end
+	local power, schools = BCS:GetSpellPower();
+
+	label:SetText(L.SPELL_POWER_COLON)
+	text:SetText(power)
+
+	frame.tooltip = format(L["SPELL_POWER_TOOLTIP_HEADER"], power)
+	frame:SetScript("OnEnter", function()
+		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
+		GameTooltip:SetText(this.tooltip)
+		GameTooltip:AddDoubleLine("Arcane", schools["Arcane"])
+		GameTooltip:AddDoubleLine("Fire", schools["Fire"])
+		GameTooltip:AddDoubleLine("Frost", schools["Frost"])
+		GameTooltip:AddDoubleLine("Holy", schools["Holy"])
+		GameTooltip:AddDoubleLine("Nature", schools["Nature"])
+		GameTooltip:AddDoubleLine("Shadow", schools["Shadow"])
+		GameTooltip:Show()
+	end)
+	frame:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
 end
 
 function BCS:SetRating(statFrame, ratingType)
@@ -572,7 +558,7 @@ function BCS:SetHealing(statFrame)
 	local text = getglobal(statFrame:GetName() .. "StatText")
 	local label = getglobal(statFrame:GetName() .. "Label")
 	
-	local power,_,_,dmg = BCS:GetSpellPower()
+	local power,_,dmg = BCS:GetSpellPower()
 	local heal = BCS:GetHealingPower()
 	
 	local spellPower = power-dmg
@@ -884,18 +870,11 @@ function BCS:UpdatePaperdollStats(prefix, index)
 		stat6:Hide()
 	elseif ( index == "PLAYERSTAT_SPELL_COMBAT" ) then
 		BCS:SetSpellPower(stat1)
-		BCS:SetRating(stat2, "SPELL")
-		BCS:SetSpellCritChance(stat3)
-		BCS:SetHealing(stat4)
+		BCS:SetHealing(stat2)
+		BCS:SetRating(stat3, "SPELL")
+		BCS:SetSpellCritChance(stat4)
 		BCS:SetManaRegen(stat5)
 		stat6:Hide()
-	elseif ( index == "PLAYERSTAT_SPELL_SCHOOLS" ) then
-		BCS:SetSpellPower(stat1, "Arcane")
-		BCS:SetSpellPower(stat2, "Fire")
-		BCS:SetSpellPower(stat3, "Frost")
-		BCS:SetSpellPower(stat4, "Holy")
-		BCS:SetSpellPower(stat5, "Nature")
-		BCS:SetSpellPower(stat6, "Shadow")
 	elseif ( index == "PLAYERSTAT_DEFENSES" ) then
 		BCS:SetArmor(stat1)
 		BCS:SetDefense(stat2)

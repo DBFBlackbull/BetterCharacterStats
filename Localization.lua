@@ -99,8 +99,7 @@ BCS["L"] = {
 	spells.]],
 	
 	["SPELL_POWER_TOOLTIP_HEADER"] = [[|cffffffffSpell Power %d|r]],
-	["SPELL_POWER_TOOLTIP"] = "Increases damage done by spells and effects.",
-	
+
 	["SPELL_POWER_SECONDARY_TOOLTIP"] = [[|cffffffffSpell Power %d (%d|cff20ff20+%d %s|r|cffffffff)|r
 	Increases damage done by spells and effects.]],
 	

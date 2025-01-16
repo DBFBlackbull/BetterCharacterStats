@@ -622,236 +622,130 @@ function BCS:GetSpellCritChance()
 	return spellCrit
 end
 
-function BCS:GetSpellPower(school)
-	if school then
-		if not L["Equip: Increases damage done by "..school.." spells and effects by up to (%d+)."] then return -1 end
-		local spellPower = 0;
-		local MAX_INVENTORY_SLOTS = 19
-		
-		for slot=0, MAX_INVENTORY_SLOTS do
-			local hasItem = BCS_Tooltip:SetInventoryItem("player", slot)
-			
-			if hasItem then
-				for line=1, BCS_Tooltip:NumLines() do
-					local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
-					
-					if left:GetText() then
+function BCS:GetSpellPower()
+	local spellPower = 0;
+	local damagePower = 0;
+	local MAX_INVENTORY_SLOTS = 19
+
+	local SpellPower_Set_Bonus = {}
+	local SpellPower_Schools = {}
+	SpellPower_Schools["Arcane"] = 0
+	SpellPower_Schools["Fire"] = 0
+	SpellPower_Schools["Frost"] = 0
+	SpellPower_Schools["Holy"] = 0
+	SpellPower_Schools["Nature"] = 0
+	SpellPower_Schools["Shadow"] = 0
+
+	-- scan gear
+	for slot=0, MAX_INVENTORY_SLOTS do
+		local hasItem = BCS_Tooltip:SetInventoryItem("player", slot)
+
+		if hasItem then
+			local SET_NAME
+
+			for line=1, BCS_Tooltip:NumLines() do
+				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
+
+				if left:GetText() then
+					local _,_, value = strfind(left:GetText(), L["Equip: Increases damage and healing done by magical spells and effects by up to (%d+)."])
+					if value then
+						spellPower = spellPower + tonumber(value)
+					end
+
+					_,_, value = strfind(left:GetText(), L["Spell Damage %+(%d+)"])
+					if value then
+						spellPower = spellPower + tonumber(value)
+					end
+
+					_,_, value = strfind(left:GetText(), L["^%+(%d+) Spell Damage and Healing"])
+					if value then
+						spellPower = spellPower + tonumber(value)
+					end
+
+					_,_, value = strfind(left:GetText(), L["^%+(%d+) Damage and Healing Spells"])
+					if value then
+						spellPower = spellPower + tonumber(value)
+					end
+
+					_,_, value = strfind(left:GetText(), "(.+) %(%d/%d%)")
+					if value then
+						SET_NAME = value
+					end
+
+					_, _, value = strfind(left:GetText(), L["^Set: Increases damage and healing done by magical spells and effects by up to (%d+)%."])
+					if value and SET_NAME and not tContains(SpellPower_Set_Bonus, SET_NAME) then
+						tinsert(SpellPower_Set_Bonus, SET_NAME)
+						spellPower = spellPower + tonumber(value)
+					end
+
+					-- Check specific school damage
+					for _, school in ipairs(SpellPower_Schools) do
+						local schoolPower = SpellPower_Schools[school]
+
 						local _,_, value = strfind(left:GetText(), L["Equip: Increases damage done by "..school.." spells and effects by up to (%d+)."])
 						if value then
-							spellPower = spellPower + tonumber(value)
+							SpellPower_Schools[school] = schoolPower + tonumber(value)
 						end
+
 						if L[school.." Damage %+(%d+)"] then
 							_,_, value = strfind(left:GetText(), L[school.." Damage %+(%d+)"])
 							if value then
-								spellPower = spellPower + tonumber(value)
+								SpellPower_Schools[school] = schoolPower + tonumber(value)
 							end
 						end
+
 						if L["^%+(%d+) "..school.." Spell Damage"] then
 							_,_, value = strfind(left:GetText(), L["^%+(%d+) "..school.." Spell Damage"])
 							if value then
-								spellPower = spellPower + tonumber(value)
+								SpellPower_Schools[school] = schoolPower + tonumber(value)
 							end
 						end
 					end
 				end
 			end
-			
 		end
-		
-		return spellPower
-	else
-		local spellPower = 0;
-		local arcanePower = 0;
-		local firePower = 0;
-		local frostPower = 0;
-		local holyPower = 0;
-		local naturePower = 0;
-		local shadowPower = 0;
-		local damagePower = 0;
-		local MAX_INVENTORY_SLOTS = 19
-		
-		local SpellPower_Set_Bonus = {}
-		
-		-- scan gear
-		for slot=0, MAX_INVENTORY_SLOTS do
-			local hasItem = BCS_Tooltip:SetInventoryItem("player", slot)
-			
-			if hasItem then
-				local SET_NAME
-				
-				for line=1, BCS_Tooltip:NumLines() do
-					local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
-					
-					if left:GetText() then
-						local _,_, value = strfind(left:GetText(), L["Equip: Increases damage and healing done by magical spells and effects by up to (%d+)."])
-						if value then
-							spellPower = spellPower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["Spell Damage %+(%d+)"])
-						if value then
-							spellPower = spellPower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["^%+(%d+) Spell Damage and Healing"])
-						if value then
-							spellPower = spellPower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["^%+(%d+) Damage and Healing Spells"])
-						if value then
-							spellPower = spellPower + tonumber(value)
-						end
-						
-						_,_, value = strfind(left:GetText(), L["Equip: Increases damage done by Arcane spells and effects by up to (%d+)."])
-						if value then
-							arcanePower = arcanePower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["^%+(%d+) Arcane Spell Damage"])
-						if value then
-							arcanePower = arcanePower + tonumber(value)
-						end
-						
-						_,_, value = strfind(left:GetText(), L["Equip: Increases damage done by Fire spells and effects by up to (%d+)."])
-						if value then
-							firePower = firePower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["Fire Damage %+(%d+)"])
-						if value then
-							firePower = firePower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["^%+(%d+) Fire Spell Damage"])
-						if value then
-							firePower = firePower + tonumber(value)
-						end
-						
-						_,_, value = strfind(left:GetText(), L["Equip: Increases damage done by Frost spells and effects by up to (%d+)."])
-						if value then
-							frostPower = frostPower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["Frost Damage %+(%d+)"])
-						if value then
-							frostPower = frostPower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["^%+(%d+) Frost Spell Damage"])
-						if value then
-							frostPower = frostPower + tonumber(value)
-						end
-						
-						_,_, value = strfind(left:GetText(), L["Equip: Increases damage done by Holy spells and effects by up to (%d+)."])
-						if value then
-							holyPower = holyPower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["^%+(%d+) Holy Spell Damage"])
-						if value then
-							holyPower = holyPower + tonumber(value)
-						end
-						
-						_,_, value = strfind(left:GetText(), L["Equip: Increases damage done by Nature spells and effects by up to (%d+)."])
-						if value then
-							naturePower = naturePower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["^%+(%d+) Nature Spell Damage"])
-						if value then
-							naturePower = naturePower + tonumber(value)
-						end
-						
-						_,_, value = strfind(left:GetText(), L["Equip: Increases damage done by Shadow spells and effects by up to (%d+)."])
-						if value then
-							shadowPower = shadowPower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["Shadow Damage %+(%d+)"])
-						if value then
-							shadowPower = shadowPower + tonumber(value)
-						end
-						_,_, value = strfind(left:GetText(), L["^%+(%d+) Shadow Spell Damage"])
-						if value then
-							shadowPower = shadowPower + tonumber(value)
-						end
-						
-						_,_, value = strfind(left:GetText(), "(.+) %(%d/%d%)")
-						if value then
-							SET_NAME = value
-						end
+	end
 
-						_, _, value = strfind(left:GetText(), L["^Set: Increases damage and healing done by magical spells and effects by up to (%d+)%."])
-						if value and SET_NAME and not tContains(SpellPower_Set_Bonus, SET_NAME) then
-							tinsert(SpellPower_Set_Bonus, SET_NAME)
-							spellPower = spellPower + tonumber(value)
-						end
-						
+	-- scan talents
+	local MAX_TABS = GetNumTalentTabs()
+
+	for tab=1, MAX_TABS do
+		local MAX_TALENTS = GetNumTalents(tab)
+
+		for talent=1, MAX_TALENTS do
+			BCS_Tooltip:SetTalent(tab, talent)
+			local MAX_LINES = BCS_Tooltip:NumLines()
+
+			for line=1, MAX_LINES do
+				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
+				if left:GetText() then
+					-- Priest
+					-- Spiritual Guidance
+					local _,_, value = strfind(left:GetText(), L["Increases spell damage and healing by up to (%d+)%% of your total Spirit."])
+					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
+					if value and rank > 0 then
+						local stat, effectiveStat = UnitStat("player", 5)
+						spellPower = spellPower + floor(((tonumber(value) / 100) * effectiveStat))
+
+						-- nothing more is currenlty supported, break out of the loops
+						line = MAX_LINES
+						talent = MAX_TALENTS
+						tab = MAX_TABS
 					end
 				end
 			end
-			
+
 		end
-		
-		-- scan talents
-		local MAX_TABS = GetNumTalentTabs()
-		
-		for tab=1, MAX_TABS do
-			local MAX_TALENTS = GetNumTalents(tab)
-			
-			for talent=1, MAX_TALENTS do
-				BCS_Tooltip:SetTalent(tab, talent)
-				local MAX_LINES = BCS_Tooltip:NumLines()
-				
-				for line=1, MAX_LINES do
-					local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
-					if left:GetText() then
-						-- Priest
-						-- Spiritual Guidance
-						local _,_, value = strfind(left:GetText(), L["Increases spell damage and healing by up to (%d+)%% of your total Spirit."])
-						local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
-						if value and rank > 0 then
-							local stat, effectiveStat = UnitStat("player", 5)
-							spellPower = spellPower + floor(((tonumber(value) / 100) * effectiveStat))
-							
-							-- nothing more is currenlty supported, break out of the loops
-							line = MAX_LINES
-							talent = MAX_TALENTS
-							tab = MAX_TABS
-						end
-					end	
-				end
-				
-			end
-		end
-		
-		-- buffs
-		local _, _, spellPowerFromAura = BCS:GetPlayerAura(L["Magical damage dealt is increased by up to (%d+)."])
-		if spellPowerFromAura then
-			spellPower = spellPower + tonumber(spellPowerFromAura)
-			damagePower = damagePower + tonumber(spellPowerFromAura)
-		end
-		
-		local secondaryPower = 0
-		local secondaryPowerName = ""
-		
-		if arcanePower > secondaryPower then
-			secondaryPower = arcanePower
-			secondaryPowerName = L.SPELL_SCHOOL_ARCANE
-		end
-		if firePower > secondaryPower then
-			secondaryPower = firePower
-			secondaryPowerName = L.SPELL_SCHOOL_FIRE
-		end
-		if frostPower > secondaryPower then
-			secondaryPower = frostPower
-			secondaryPowerName = L.SPELL_SCHOOL_FROST
-		end
-		if holyPower > secondaryPower then
-			secondaryPower = holyPower
-			secondaryPowerName = L.SPELL_SCHOOL_HOLY
-		end
-		if naturePower > secondaryPower then
-			secondaryPower = naturePower
-			secondaryPowerName = L.SPELL_SCHOOL_NATURE
-		end
-		if shadowPower > secondaryPower then
-			secondaryPower = shadowPower
-			secondaryPowerName = L.SPELL_SCHOOL_SHADOW
-		end
-		
-		return spellPower, secondaryPower, secondaryPowerName, damagePower
 	end
+
+	-- buffs
+	local _, _, spellPowerFromAura = BCS:GetPlayerAura(L["Magical damage dealt is increased by up to (%d+)."])
+	if spellPowerFromAura then
+		spellPower = spellPower + tonumber(spellPowerFromAura)
+		damagePower = damagePower + tonumber(spellPowerFromAura)
+	end
+
+	return spellPower, SpellPower_Schools, damagePower
 end
 
 function BCS:GetHealingPower()
