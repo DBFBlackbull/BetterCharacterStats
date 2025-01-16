@@ -98,14 +98,14 @@ BCS["L"] = {
 	Result of an attack made with 
 	spells.]],
 	
-	["SPELL_POWER_TOOLTIP"] = [[|cffffffffSpell Power %d|r
-	Increases damage done by spells and effects.]],
+	["SPELL_POWER_TOOLTIP_HEADER"] = [[|cffffffffSpell Power %d|r]],
+	["SPELL_POWER_TOOLTIP"] = "Increases damage done by spells and effects.",
 	
 	["SPELL_POWER_SECONDARY_TOOLTIP"] = [[|cffffffffSpell Power %d (%d|cff20ff20+%d %s|r|cffffffff)|r
 	Increases damage done by spells and effects.]],
 	
-	["SPELL_HEALING_POWER_TOOLTIP"] = [[|cffffffffHealing Power %d (%d|cff20ff20+%d|r|cffffffff)|r
-	Increases healing done by spells and effects.]],	
+	["SPELL_HEALING_POWER_TOOLTIP_HEADER"] = [[|cffffffffHealing Power %d (%d|cff20ff20+%d|r|cffffffff)|r]],
+	["SPELL_HEALING_POWER_TOOLTIP"] = "Increases healing done by spells and effects.",
 	
 	["SPELL_MANA_REGEN_TOOLTIP"] = [[|cffffffffMana regen %d (%d|cff20ff20+%d|r|cffffffff)|r
 	Regenerating points of mana every 5 seconds.]],

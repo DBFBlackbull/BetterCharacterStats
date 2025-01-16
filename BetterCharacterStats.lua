@@ -365,7 +365,7 @@ function BCS:SetAttackSpeed(statFrame)
 	statFrame:Show()
 end
 
-function BCS:SetAttackPower(statFrame)	
+function BCS:SetAttackPower(statFrame)
 	local base, posBuff, negBuff = UnitAttackPower("player")
 
 	local frame = statFrame 
@@ -375,7 +375,7 @@ function BCS:SetAttackPower(statFrame)
 	label:SetText(TEXT(ATTACK_POWER_COLON))
 
 	PaperDollFormatStat(MELEE_ATTACK_POWER, base, posBuff, negBuff, frame, text)
-	frame.tooltipSubtext = format(L["ATTACK_POWER_TOOLTIP"], "melee", max(0,base + posBuff + negBuff)/ATTACK_POWER_MAGIC_NUMBER);
+	frame.tooltipSubtext = format(L.ATTACK_POWER_TOOLTIP, "melee", max(0,base + posBuff + negBuff)/ATTACK_POWER_MAGIC_NUMBER);
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 		GameTooltip:SetText(this.tooltip)
@@ -414,7 +414,6 @@ function BCS:SetSpellPower(statFrame, school)
 		
 		if secondaryPower > 0 then
 			frame.tooltip = format(L.SPELL_POWER_SECONDARY_TOOLTIP, (power+secondaryPower), power, secondaryPower, secondaryName)
-			
 			frame:SetScript("OnEnter", function()
 				GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 				GameTooltip:SetText(this.tooltip)
@@ -576,16 +575,18 @@ function BCS:SetHealing(statFrame)
 	local power,_,_,dmg = BCS:GetSpellPower()
 	local heal = BCS:GetHealingPower()
 	
-	power = power-dmg
+	local spellPower = power-dmg
+	local healingPower = spellPower + heal;
 	
 	label:SetText(L.HEAL_POWER_COLON)
-	text:SetText(power+heal)
+	text:SetText(healingPower)
 	
-	frame.tooltip = format(L.SPELL_HEALING_POWER_TOOLTIP, (power+heal), power, heal)
-	
+	frame.tooltip = format(L.SPELL_HEALING_POWER_TOOLTIP_HEADER, healingPower, spellPower, heal)
+	frame.tooltipSubtext = L.SPELL_HEALING_POWER_TOOLTIP;
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 		GameTooltip:SetText(this.tooltip)
+		GameTooltip:AddLine(this.tooltipSubtext)
 		GameTooltip:Show()
 	end)
 	frame:SetScript("OnLeave", function()
@@ -820,7 +821,7 @@ function BCS:SetRangedAttackPower(statFrame)
 
 	local base, posBuff, negBuff = UnitRangedAttackPower("player")
 	PaperDollFormatStat(RANGED_ATTACK_POWER, base, posBuff, negBuff, frame, text)
-	frame.tooltipSubtext = format(L["ATTACK_POWER_TOOLTIP"], "ranged", max(0,base + posBuff + negBuff)/ATTACK_POWER_MAGIC_NUMBER);
+	frame.tooltipSubtext = format(L.ATTACK_POWER_TOOLTIP, "ranged", max(0,base + posBuff + negBuff)/ATTACK_POWER_MAGIC_NUMBER);
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 		GameTooltip:SetText(this.tooltip)
