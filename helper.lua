@@ -150,16 +150,16 @@ function BCS:GetHitRating(hitOnly)
 				end
 
 				-- shamans
-				_,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
-				name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
+				local _,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
+				local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
 				if value and rank > 0 then
 					hit = hit + tonumber(value)
 					line = MAX_LINES
 				end
 				
 				-- hunters
-				_,_, value = strfind(left:GetText(), L["Increases hit chance by (%d)%% and increases the chance movement impairing effects will be resisted by an additional %d+%%."])
-				name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
+				local _,_, value = strfind(left:GetText(), L["Increases hit chance by (%d)%% and increases the chance movement impairing effects will be resisted by an additional %d+%%."])
+				local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
 				if value and rank > 0 then
 					hit = hit + tonumber(value)
 					line = MAX_LINES
@@ -186,7 +186,8 @@ function BCS:GetHitRating(hitOnly)
 			for line=1, MAX_LINES do
 				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
 				if left:GetText() then
-					-- rogues, paladins
+					-- Rogues, Paladins
+					-- Precision
 					local _,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee weapons by (%d)%%."])
 					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
 					if value and rank > 0 then
@@ -200,9 +201,10 @@ function BCS:GetHitRating(hitOnly)
 						tab = MAX_TABS
 					end
 
-					-- shamans
-					_,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
-					name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
+					-- Shamans
+					-- Nature's Guidance
+					local _,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
+					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
 					if value and rank > 0 then
 						hit = hit + tonumber(value)
 
@@ -214,9 +216,10 @@ function BCS:GetHitRating(hitOnly)
 						tab = MAX_TABS
 					end
 					
-					-- hunters
-					_,_, value = strfind(left:GetText(), L["Increases hit chance by (%d)%% and increases the chance movement impairing effects will be resisted by an additional %d+%%."])
-					name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
+					-- Hunters
+					-- Surefooted
+					local _,_, value = strfind(left:GetText(), L["Increases hit chance by (%d)%% and increases the chance movement impairing effects will be resisted by an additional %d+%%."])
+					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
 					if value and rank > 0 then
 						hit = hit + tonumber(value)
 						
@@ -292,16 +295,18 @@ function BCS:GetSpellHitRating()
 					if value then
 						hit = hit + tonumber(value)
 					end
-					_,_, value = strfind(left:GetText(), L["/Spell Hit %+(%d+)"])
+
+					local _,_, value = strfind(left:GetText(), L["/Spell Hit %+(%d+)"])
 					if value then
 						hit = hit + tonumber(value)
 					end
 					
-					_,_, value = strfind(left:GetText(), "(.+) %(%d/%d%)")
+					local _,_, value = strfind(left:GetText(), "(.+) %(%d/%d%)")
 					if value then
 						SET_NAME = value
 					end
-					_, _, value = strfind(left:GetText(), L["^Set: Improves your chance to hit with spells by (%d)%%."])
+
+					local _, _, value = strfind(left:GetText(), L["^Set: Improves your chance to hit with spells by (%d)%%."])
 					if value and SET_NAME and not tContains(hit_Set_Bonus, SET_NAME) then
 						tinsert(hit_Set_Bonus, SET_NAME)
 						hit = hit + tonumber(value)
@@ -336,8 +341,8 @@ function BCS:GetSpellHitRating()
 					end
 					
 					-- Arcane Focus
-					_,_, value = strfind(left:GetText(), L["Reduces the chance that the opponent can resist your Arcane spells by (%d+)%%."])
-					name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
+					local _,_, value = strfind(left:GetText(), L["Reduces the chance that the opponent can resist your Arcane spells by (%d+)%%."])
+					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
 					if value and rank > 0 then
 						hit_arcane = hit_arcane + tonumber(value)
 						line = MAX_LINES
@@ -345,8 +350,8 @@ function BCS:GetSpellHitRating()
 					
 					-- Priest
 					-- Shadow Focus
-					_,_, value = strfind(left:GetText(), L["Reduces your target's chance to resist your Shadow spells by (%d+)%%."])
-					name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
+					local _,_, value = strfind(left:GetText(), L["Reduces your target's chance to resist your Shadow spells by (%d+)%%."])
+					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
 					if value and rank > 0 then
 						hit_shadow = hit_shadow + tonumber(value)
 						line = MAX_LINES
@@ -354,8 +359,8 @@ function BCS:GetSpellHitRating()
 
 					-- Shaman
 					-- Nature's Guidance
-					_,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
-					name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
+					local _,_, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
+					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
 					if value and rank > 0 then
 						hit = hit + tonumber(value)
 						line = MAX_LINES
