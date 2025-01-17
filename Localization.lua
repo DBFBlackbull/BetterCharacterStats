@@ -106,16 +106,21 @@ BCS["L"] = {
 	melee or ranged weapons.]],
 
 	["PHYSICAL_HIT_TOOLTIP_HEADER"] = [[|cffffffffHit Chance %d%%|r]],
-	["PHYSICAL_HIT_TOOLTIP"] = [[%.1f%% chance to miss vs level %d monster
-	%.1f%% chance to miss vs boss monster
-	%.1f%% hit suppression vs boss monster]],
+	["PHYSICAL_HIT_TOOLTIP"] = [[Reduces the chance your attacks miss
+	%.1f%% chance to miss vs level %d
+	%.1f%% chance to miss vs boss
+	%.1f%% hit suppression vs boss]],
 
-	["DUAL_WIELD_HIT_TOOLTIP"] = [[%.1f%% chance to miss with Main hand vs level %d monster
-	%.1f%% chance to miss with Off hand vs level %d monster
-	%.1f%% chance to miss with Main hand vs boss monster
-	%.1f%% chance to miss witg Off hand vs boss monster
-	%.1f%% Main hand hit suppression vs boss monster
-	%.1f%% Off hand hit suppression vs boss monster]],
+	["DUAL_WIELD_HIT_TOOLTIP"] = [[Reduces the chance your attacks miss
+	%.1f%% chance to miss with Main hand vs level %d
+	%.1f%% chance to miss with Off hand vs level %d
+	%.1f%% chance to miss with Main hand vs boss
+	%.1f%% chance to miss witg Off hand vs boss
+	%.1f%% Main hand hit suppression vs boss
+	%.1f%% Off hand hit suppression vs boss]],
+
+	["GLANCING_BLOW_TOOLTIP_HEADER"] = [[|cffffffffGlancing Blow Penalty %d%%|r]],
+	["GLANCING_BLOW_TOOLTIP"] = "Against Boss level monsters, 40% chance to ",
 
 	["SPELL_HIT_TOOLTIP"] = [[|cffffffffHit|r
 	Result of an attack made with 
@@ -151,6 +156,7 @@ BCS["L"] = {
 	MELEE_CRIT_COLON = "Crit Chance:",
 	RANGED_CRIT_COLON = "Crit Chance:",
 	SPELL_CRIT_COLON = "Crit Chance:",
+	MELEE_GLANCING_BLOW_COLON = "Glancing Blow:",
 	MANA_REGEN_COLON = "Mana regen:",
 	HEAL_POWER_COLON = "Healing:",
 	DODGE_COLON = DODGE .. ":",
