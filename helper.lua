@@ -321,6 +321,21 @@ function BCS:GetWeaponSkill()
 	return main_hand_skill, off_hand_skill, ranged_skill
 end
 
+function BCS:GetGlancingBlow(targetDefense, attackerSkill, attackerLevel)
+	local skillDiff = targetDefense - attackerSkill
+	local glanceChance = 10 + (targetDefense - math.min(attackerLevel*5, attackerSkill)) * 2
+
+	local glanceLowEnd = 1.3 - 0.05*skillDiff
+	local glanceHighEnd = 1.2 - 0.03*skillDiff
+
+	glanceLowEnd = math.min(glanceLowEnd, 0.91)
+	glanceHighEnd= math.min(glanceHighEnd, 0.99)
+	glanceHighEnd= math.max(glanceHighEnd, 0.2)
+
+	local glancePenalty = (1 - (glanceHighEnd + glanceLowEnd) / 2) * 100
+	return glanceChance, glancePenalty
+end
+
 function BCS:GetMissChance(targetDefense, attackerSkill)
 	local targetMiss = 0
 	local hitSuppression = 0

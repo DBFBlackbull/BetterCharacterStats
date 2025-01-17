@@ -37,16 +37,18 @@ Thanks to:
 - 1.12.1
   - Fixed melee and ranged attack power tooltip
 - 1.12.2
- - Added Flask of Supreme Power
- - Added Firepower Elixir
- - Added Shadow power Elixir
- - Added Frost power Elixir
- - Added Blessing of Blackfathom
- - Better styling for spell power and power for each school
- - Removed dedicated tab for spell for each school
+  - Added Flask of Supreme Power
+  - Added Firepower Elixir
+  - Added Shadow power Elixir
+  - Added Frost power Elixir
+  - Added Blessing of Blackfathom
+  - Better styling for spell power and power for each school
+  - Removed dedicated tab for spell for each school
 - 1.12.3
- - No longer adds melee hit to ranged hit
- - Correctly calculates miss chance factoring in weapon skill
- - Calculates miss for at level and bosses
- - Calculates hit chance suppression
- - Show all information for main hand, off hand, and ranged
+  - No longer adds melee hit to ranged hit
+  - Correctly calculates miss chance factoring in weapon skill
+  - Calculates miss for at level and bosses
+  - Calculates hit chance suppression
+  - Show all information for main hand, off hand, and ranged
+- 1.12.4
+  - Added Glancing blow for boss monsters to melee statistics

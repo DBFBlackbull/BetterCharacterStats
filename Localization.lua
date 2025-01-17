@@ -119,8 +119,11 @@ BCS["L"] = {
 	%.1f%% Main hand hit suppression vs boss
 	%.1f%% Off hand hit suppression vs boss]],
 
-	["GLANCING_BLOW_TOOLTIP_HEADER"] = [[|cffffffffGlancing Blow Penalty %d%%|r]],
-	["GLANCING_BLOW_TOOLTIP"] = "Against Boss level monsters, 40% chance to ",
+
+	["GLANCING_BLOW_TOOLTIP_HEADER"] = [[|cffffffffGlancing Blow Penalty %.1f%%|r]],
+	["GLANCING_BLOW_TOOLTIP"] = [[Auto attacks against Boss level monsters have
+	%d%% chance to glance, dealing reduced damage.
+	Glancing blow penalty: %.1f%%]],
 
 	["SPELL_HIT_TOOLTIP"] = [[|cffffffffHit|r
 	Result of an attack made with 
@@ -156,7 +159,7 @@ BCS["L"] = {
 	MELEE_CRIT_COLON = "Crit Chance:",
 	RANGED_CRIT_COLON = "Crit Chance:",
 	SPELL_CRIT_COLON = "Crit Chance:",
-	MELEE_GLANCING_BLOW_COLON = "Glancing Blow:",
+	MELEE_GLANCING_BLOW_COLON = "Glancing:",
 	MANA_REGEN_COLON = "Mana regen:",
 	HEAL_POWER_COLON = "Healing:",
 	DODGE_COLON = DODGE .. ":",

@@ -544,6 +544,40 @@ function BCS:SetMeleeCritChance(statFrame)
 	text:SetText(format("%.2f%%", BCS:GetCritChance()))
 end
 
+function BCS:SetGlancingBlow(statFrame)
+	local frame = statFrame
+	local text = getglobal(statFrame:GetName() .. "StatText")
+	local label = getglobal(statFrame:GetName() .. "Label")
+
+	local playerLevel = UnitLevel("player")
+	local targetDefense = (playerLevel+3)*5
+
+	local mainHandSkill, offHandSkill = BCS:GetWeaponSkill()
+	local mainHandGlanceChance, mainHandGlancePen = BCS:GetGlancingBlow(targetDefense, mainHandSkill, playerLevel)
+	BCS:Print(""..mainHandGlancePen)
+
+	--if offHandSkill then
+	--	offHandGlanceChance, offHandGlancePen = BCS:GetGlancingBlow(targetDefense, offHandSkill, playerLevel)
+	--end
+
+	label:SetText(L.MELEE_GLANCING_BLOW_COLON)
+	text:SetText(format("%.1f%%", mainHandGlancePen))
+
+	frame.tooltip = format(L.GLANCING_BLOW_TOOLTIP_HEADER, mainHandGlancePen)
+	frame.tooltipSubtext = format(L.GLANCING_BLOW_TOOLTIP, mainHandGlanceChance, mainHandGlancePen)
+
+	frame:SetScript("OnEnter", function()
+		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
+		GameTooltip:SetText(this.tooltip)
+		GameTooltip:AddLine(this.tooltipSubtext)
+		GameTooltip:Show()
+	end)
+	frame:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
+end
+
+
 function BCS:SetSpellCritChance(statFrame)
 	local frame = statFrame 
 	local text = getglobal(statFrame:GetName() .. "StatText")
@@ -869,7 +903,7 @@ function BCS:UpdatePaperdollStats(prefix, index)
 		BCS:SetAttackPower(stat3)
 		BCS:SetRating(stat4, "MELEE")
 		BCS:SetMeleeCritChance(stat5)
-		stat6:Hide()
+		BCS:SetGlancingBlow(stat6)
 	elseif ( index == "PLAYERSTAT_RANGED_COMBAT" ) then
 		BCS:SetRangedDamage(stat1)
 		BCS:SetRangedAttackSpeed(stat2)
