@@ -283,7 +283,8 @@ function BCS:GetWeaponSkill()
 	local mainHandLink = GetInventoryItemLink("player", 16)
 	if mainHandLink then
 		local itemID = BCS:GetItemIDFromLink(mainHandLink)
-		_, _, _, _, _, main_hand_type = GetItemInfo(itemID)
+		_, _, _, _, _, main_hand_type, subtype = GetItemInfo(itemID)
+		main_hand_type = string.gsub(main_hand_type,"^One%-Handed%s*", "")
 	end
 
 	if not main_hand_type then
@@ -294,6 +295,7 @@ function BCS:GetWeaponSkill()
 	if offHandLink then
 		local itemID = BCS:GetItemIDFromLink(offHandLink)
 		_, _, _, _, _, off_hand_type = GetItemInfo(itemID)
+		off_hand_type = string.gsub(off_hand_type,"^One%-Handed%s*", "")
 	end
 
 	local rangedLink = GetInventoryItemLink("player", 18)
@@ -305,7 +307,9 @@ function BCS:GetWeaponSkill()
 	local MAX_SKILLS = GetNumSkillLines()
 	for skill=0, MAX_SKILLS do
 		local skillName, _, _, skillRank, numTempPoints, skillModifier  = GetSkillLineInfo(skill)
+		BCS:Print(skillName or "nil")
 		if skillName and skillName == main_hand_type then
+			BCS:Print(skillName)
 			main_hand_skill = skillRank + numTempPoints + skillModifier
 		end
 

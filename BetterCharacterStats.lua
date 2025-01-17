@@ -554,7 +554,6 @@ function BCS:SetGlancingBlow(statFrame)
 
 	local mainHandSkill, offHandSkill = BCS:GetWeaponSkill()
 	local mainHandGlanceChance, mainHandGlancePen = BCS:GetGlancingBlow(targetDefense, mainHandSkill, playerLevel)
-	BCS:Print(""..mainHandGlancePen)
 
 	--if offHandSkill then
 	--	offHandGlanceChance, offHandGlancePen = BCS:GetGlancingBlow(targetDefense, offHandSkill, playerLevel)
