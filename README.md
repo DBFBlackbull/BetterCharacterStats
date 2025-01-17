@@ -36,3 +36,11 @@ Thanks to:
   - Reads Melee and Spell hit from Nature's Guideance talent
 - 1.12.1
   - Fixed melee and ranged attack power tooltip
+- 1.12.2
+ - Added Flask of Supreme Power
+ - Added Firepower Elixir
+ - Added Shadow power Elixir
+ - Added Frost power Elixir
+ - Added Blessing of Blackfathom
+ - Better styling for spell power and power for each school
+ - Removed dedicated tab for spell for each school
