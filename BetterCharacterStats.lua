@@ -374,7 +374,7 @@ function BCS:SetAttackPower(statFrame)
 	label:SetText(TEXT(ATTACK_POWER_COLON))
 
 	PaperDollFormatStat(MELEE_ATTACK_POWER, base, posBuff, negBuff, frame, text)
-	frame.tooltipSubtext = format(L.ATTACK_POWER_TOOLTIP, "melee", max(0,base + posBuff + negBuff)/ATTACK_POWER_MAGIC_NUMBER);
+	frame.tooltipSubtext = format(L.MELEE_ATTACK_POWER_TOOLTIP, max(0,base + posBuff + negBuff)/ATTACK_POWER_MAGIC_NUMBER);
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 		GameTooltip:SetText(this.tooltip)
@@ -386,7 +386,7 @@ function BCS:SetAttackPower(statFrame)
 	end)
 end
 
-function BCS:SetSpellPower(statFrame, school)
+function BCS:SetSpellPower(statFrame)
 	local frame = statFrame 
 	local text = getglobal(statFrame:GetName() .. "StatText")
 	local label = getglobal(statFrame:GetName() .. "Label")
@@ -807,7 +807,7 @@ function BCS:SetRangedAttackPower(statFrame)
 
 	local base, posBuff, negBuff = UnitRangedAttackPower("player")
 	PaperDollFormatStat(RANGED_ATTACK_POWER, base, posBuff, negBuff, frame, text)
-	frame.tooltipSubtext = format(L.ATTACK_POWER_TOOLTIP, "ranged", max(0,base + posBuff + negBuff)/ATTACK_POWER_MAGIC_NUMBER);
+	frame.tooltipSubtext = format(L.RANGED_ATTACK_POWER_TOOLTIP, max(0,base + posBuff + negBuff)/ATTACK_POWER_MAGIC_NUMBER);
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 		GameTooltip:SetText(this.tooltip)

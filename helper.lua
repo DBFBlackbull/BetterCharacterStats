@@ -631,13 +631,14 @@ function BCS:GetSpellPower()
 	local MAX_INVENTORY_SLOTS = 19
 
 	local SpellPower_Set_Bonus = {}
-	local SpellPower_Schools = {}
-	SpellPower_Schools["Arcane"] = 0
-	SpellPower_Schools["Fire"] = 0
-	SpellPower_Schools["Frost"] = 0
-	SpellPower_Schools["Holy"] = 0
-	SpellPower_Schools["Nature"] = 0
-	SpellPower_Schools["Shadow"] = 0
+	local SpellPower_Schools = {
+		["Arcane"] = 0,
+		["Fire"] = 0,
+		["Frost"] = 0,
+		["Holy"] = 0,
+		["Nature"] = 0,
+		["Shadow"] = 0,
+	}
 
 	-- scan gear
 	for slot=0, MAX_INVENTORY_SLOTS do
@@ -682,9 +683,7 @@ function BCS:GetSpellPower()
 					end
 
 					-- Check specific school damage
-					for _, school in ipairs(SpellPower_Schools) do
-						local schoolPower = SpellPower_Schools[school]
-
+					for school, schoolPower in pairs(SpellPower_Schools) do
 						local _,_, value = strfind(left:GetText(), L["Equip: Increases damage done by "..school.." spells and effects by up to (%d+)."])
 						if value then
 							SpellPower_Schools[school] = schoolPower + tonumber(value)
@@ -711,7 +710,6 @@ function BCS:GetSpellPower()
 
 	-- scan talents
 	local MAX_TABS = GetNumTalentTabs()
-
 	for tab=1, MAX_TABS do
 		local MAX_TALENTS = GetNumTalents(tab)
 
@@ -741,12 +739,35 @@ function BCS:GetSpellPower()
 		end
 	end
 
-	-- buffs
+	-- Very Berry Cream
 	local _, _, spellPowerFromAura = BCS:GetPlayerAura(L["Magical damage dealt is increased by up to (%d+)."])
 	if spellPowerFromAura then
 		spellPower = spellPower + tonumber(spellPowerFromAura)
 		damagePower = damagePower + tonumber(spellPowerFromAura)
 	end
+
+	-- (Greater) Arcane Elixir
+	local _, _, spellPowerFromAura = BCS:GetPlayerAura(L["Magical damage dealt by spells and abilities is increased by up to (%d+)."])
+	if spellPowerFromAura then
+		spellPower = spellPower + tonumber(spellPowerFromAura)
+		damagePower = damagePower + tonumber(spellPowerFromAura)
+	end
+
+	-- Flask of Supreme power
+	local _, _, spellPowerFromAura = BCS:GetPlayerAura(L["Spell damage increased by up to (%d+)."])
+	if spellPowerFromAura then
+		spellPower = spellPower + tonumber(spellPowerFromAura)
+		damagePower = damagePower + tonumber(spellPowerFromAura)
+	end
+
+	-- Fire, Frost, Shadow power Elixir
+	for school, schoolPower in pairs(SpellPower_Schools) do
+		local _, _, schoolPowerFromAura = BCS:GetPlayerAura(L[school.." damage dealt by spells and abilities is increased by up to (%d+)."])
+		if schoolPowerFromAura then
+			SpellPower_Schools[school] = schoolPower + tonumber(schoolPowerFromAura)
+		end
+	end
+
 
 	return spellPower, SpellPower_Schools, damagePower
 end

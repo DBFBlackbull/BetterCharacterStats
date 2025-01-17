@@ -30,11 +30,14 @@ BCS["L"] = {
 	["Equip: Increases damage done by Holy spells and effects by up to (%d+)."] = "Equip: Increases damage done by Holy spells and effects by up to (%d+).",
 	["Equip: Increases damage done by Nature spells and effects by up to (%d+)."] = "Equip: Increases damage done by Nature spells and effects by up to (%d+).",
 	["Equip: Increases damage done by Shadow spells and effects by up to (%d+)."] = "Equip: Increases damage done by Shadow spells and effects by up to (%d+).",
-	
-	["Shadow Damage %+(%d+)"] = "Shadow Damage %+(%d+)",
+
 	["Spell Damage %+(%d+)"] = "Spell Damage %+(%d+)",
+	["Arcane Damage %+(%d+)"] = "Arcane Damage %+(%d+)",
 	["Fire Damage %+(%d+)"] = "Fire Damage %+(%d+)",
 	["Frost Damage %+(%d+)"] = "Frost Damage %+(%d+)",
+	["Holy Damage %+(%d+)"] = "Holy Damage %+(%d+)",
+	["Nature Damage %+(%d+)"] = "Nature Damage %+(%d+)",
+	["Shadow Damage %+(%d+)"] = "Shadow Damage %+(%d+)",
 	["Healing Spells %+(%d+)"] = "Healing Spells %+(%d+)",
 	
 	["Equip: Restores (%d+) mana per 5 sec."] = "Equip: Restores (%d+) mana per 5 sec.",
@@ -61,9 +64,18 @@ BCS["L"] = {
 	["Equip: Increases healing done by spells and effects by up to (%d+)."] = "Equip: Increases healing done by spells and effects by up to (%d+).",
 	
 	-- auras
-	["Chance to hit increased by (%d)%%."] = 														"Chance to hit increased by (%d)%%.",
-	["Magical damage dealt is increased by up to (%d+)."] = 										"Magical damage dealt is increased by up to (%d+).",
+	["Spell damage increased by up to (%d+)."] =													"Spell damage increased by up to (%d+).", -- Flask of supreme power
+	["Magical damage dealt is increased by up to (%d+)."] = 										"Magical damage dealt is increased by up to (%d+).", -- Very Berry cream
+	["Magical damage dealt by spells and abilities is increased by up to (%d+)."] = 				"Magical damage dealt by spells and abilities is increased by up to (%d+).", -- Arcane elixir
+	["Arcane damage dealt by spells and abilities is increased by up to (%d+)."] = 					"Arcane damage dealt by spells and abilities is increased by up to (%d+).",
+	["Fire damage dealt by spells and abilities is increased by up to (%d+)."] = 					"Fire damage dealt by spells and abilities is increased by up to (%d+).", -- Firepower elixir
+	["Frost damage dealt by spells and abilities is increased by up to (%d+)."] = 					"Frost damage dealt by spells and abilities is increased by up to (%d+).", -- Frost power elixir
+	["Holy damage dealt by spells and abilities is increased by up to (%d+)."] = 					"Holy damage dealt by spells and abilities is increased by up to (%d+).",
+	["Nature damage dealt by spells and abilities is increased by up to (%d+)."] = 					"Nature damage dealt by spells and abilities is increased by up to (%d+).",
+	["Shadow damage dealt by spells and abilities is increased by up to (%d+)."] = 					"Shadow damage dealt by spells and abilities is increased by up to (%d+).", -- Shadow power elixir
 	["Healing done by magical spells is increased by up to (%d+)."] = 								"Healing done by magical spells is increased by up to (%d+).",
+
+	["Chance to hit increased by (%d)%%."] = 														"Chance to hit increased by (%d)%%.",
 	["Chance to hit reduced by (%d+)%%."] = 														"Chance to hit reduced by (%d+)%%.",
 	["Chance to hit decreased by (%d+)%% and %d+ Nature damage every %d+ sec."] = 					"Chance to hit decreased by (%d+)%% and %d+ Nature damage every %d+ sec.",
 	["Lowered chance to hit."] = 																	"Lowered chance to hit.", -- 5917	Fumble (25%)
@@ -84,7 +96,8 @@ BCS["L"] = {
 	["Destruction spell critical hit chance increased by (%d+)%%."] = "Destruction spell critical hit chance increased by (%d+)%%.",
 	["Critical strike chance with spells and melee attacks increased by (%d+)%%."] = "Critical strike chance with spells and melee attacks increased by (%d+)%%.",
 
-	["ATTACK_POWER_TOOLTIP"] = "Increase damage with %s weapons by\r\n %.1f damage per second.",
+	["MELEE_ATTACK_POWER_TOOLTIP"] = "Increase damage with melee weapons by\r\n %.1f damage per second.",
+	["RANGED_ATTACK_POWER_TOOLTIP"] = "Increase damage with ranged weapons by\r\n %.1f damage per second.",
 
 	["MELEE_HIT_TOOLTIP"] = [[|cffffffffHit|r
 	Result of an attack made with 
@@ -99,9 +112,6 @@ BCS["L"] = {
 	spells.]],
 	
 	["SPELL_POWER_TOOLTIP_HEADER"] = [[|cffffffffSpell Power %d|r]],
-
-	["SPELL_POWER_SECONDARY_TOOLTIP"] = [[|cffffffffSpell Power %d (%d|cff20ff20+%d %s|r|cffffffff)|r
-	Increases damage done by spells and effects.]],
 	
 	["SPELL_HEALING_POWER_TOOLTIP_HEADER"] = [[|cffffffffHealing Power %d (%d|cff20ff20+%d|r|cffffffff)|r]],
 	["SPELL_HEALING_POWER_TOOLTIP"] = "Increases healing done by spells and effects.",
