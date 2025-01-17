@@ -768,6 +768,11 @@ function BCS:GetSpellPower()
 		end
 	end
 
+	-- Blessing of Blackfathom debuff
+	local _, _, schoolPowerFromAura = BCS:GetPlayerAura(L["Increases frost damage done by (%d+)"], 'HARMFUL')
+	if schoolPowerFromAura then
+		SpellPower_Schools["Frost"] = SpellPower_Schools["Frost"] + tonumber(schoolPowerFromAura)
+	end
 
 	return spellPower, SpellPower_Schools, damagePower
 end

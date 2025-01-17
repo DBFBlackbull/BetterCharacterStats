@@ -75,6 +75,8 @@ BCS["L"] = {
 	["Shadow damage dealt by spells and abilities is increased by up to (%d+)."] = 					"Shadow damage dealt by spells and abilities is increased by up to (%d+).", -- Shadow power elixir
 	["Healing done by magical spells is increased by up to (%d+)."] = 								"Healing done by magical spells is increased by up to (%d+).",
 
+	["Increases frost damage done by (%d+)"] = "Increases frost damage done by (%d+)", -- Blessing of Blackfathom
+
 	["Chance to hit increased by (%d)%%."] = 														"Chance to hit increased by (%d)%%.",
 	["Chance to hit reduced by (%d+)%%."] = 														"Chance to hit reduced by (%d+)%%.",
 	["Chance to hit decreased by (%d+)%% and %d+ Nature damage every %d+ sec."] = 					"Chance to hit decreased by (%d+)%% and %d+ Nature damage every %d+ sec.",
