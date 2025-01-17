@@ -423,44 +423,52 @@ function BCS:SetRating(statFrame, ratingType)
 	local colorPos = "|cff20ff20"
 	local colorNeg = "|cffff2020"
 
-	local melee_hit,ranged_hit,hit_debuff = BCS:GetHitRating()
-	if ratingType == "MELEE" then
-		local rating = math.max(0, melee_hit - hit_debuff)
+	local playerLevel = UnitLevel("player")
+	if ratingType == "MELEE" or ratingType == "RANGED" then
+		local melee_hit,ranged_hit,hit_debuff = BCS:GetHitRating()
+		local mainHandSkill, offHandSkill, rangedSkill = BCS:GetWeaponSkill()
+		local hitChance = 0
+		local offHandChance
+		local weaponSkill = 0
+
+		if ratingType == "MELEE" then
+			hitChance = math.max(0, melee_hit - hit_debuff)
+			weaponSkill = mainHandSkill
+		end
+
+		if ratingType == "RANGED" then
+			hitChance = math.max(0, ranged_hit - hit_debuff)
+			weaponSkill = rangedSkill
+		end
+
+		local hitChanceString = hitChance .."%"
 		if BCS.MELEEHIT[BCS.playerClass] then
-			if rating < BCS.MELEEHIT[BCS.playerClass][1] then
-				rating = colorNeg .. rating .. "%|r"
-			elseif rating >= BCS.MELEEHIT[BCS.playerClass][2] then
-				rating = colorPos .. rating .. "%|r"
-			else
-				rating = rating .. "%"
+			if hitChance < BCS.MELEEHIT[BCS.playerClass][1] then
+				hitChanceString = colorNeg .. hitChance .. "|r"
+			elseif hitChance >= BCS.MELEEHIT[BCS.playerClass][2] then
+				hitChanceString = colorPos .. hitChance .. "|r"
 			end
-		else
-			rating = rating .. "%"
 		end
-		text:SetText(rating)
-		
-		frame.tooltip = L.MELEE_HIT_TOOLTIP
-		if L[BCS.playerClass .. "_MELEE_HIT_TOOLTIP"] then
-			frame.tooltipSubtext = L[BCS.playerClass .. "_MELEE_HIT_TOOLTIP"]
-		end
-	elseif ratingType == "RANGED" then
-		local rating = math.max(0, ranged_hit - hit_debuff)
-		if BCS.MELEEHIT[BCS.playerClass] then
-			if rating < BCS.MELEEHIT[BCS.playerClass][1] then
-				rating = colorNeg .. rating .. "%|r"
-			elseif rating >= BCS.MELEEHIT[BCS.playerClass][2] then
-				rating = colorPos .. rating .. "%|r"
-			else
-				rating = rating .. "%"
-			end
-		else
-			rating = rating .. "%"
-		end
-		text:SetText(rating)
-		
-		frame.tooltip = L.MELEE_HIT_TOOLTIP
-		if L[BCS.playerClass .. "_MELEE_HIT_TOOLTIP"] then
-			frame.tooltipSubtext = L[BCS.playerClass .. "_MELEE_HIT_TOOLTIP"]
+		text:SetText(hitChanceString)
+
+		local missChance = BCS:GetMissChance(playerLevel*5, weaponSkill)
+		local bossMissChance, hitSuppression = BCS:GetMissChance((playerLevel+3)*5, weaponSkill)
+
+		missChance = math.max(0, missChance - hitChance)
+		bossMissChance = math.max(0, bossMissChance - math.max(0, hitChance - hitSuppression))
+
+		frame.tooltip = format(L.PHYSICAL_HIT_TOOLTIP_HEADER, hitChance)
+		frame.tooltipSubtext = format(L.PHYSICAL_HIT_TOOLTIP, missChance, playerLevel, bossMissChance, hitSuppression)
+
+		if offHandSkill then
+			offHandChance = math.max(0, melee_hit - hit_debuff)
+			local offHandMissChance = BCS:GetMissChance(playerLevel*5, offHandSkill)
+			local bossOffHandMissChance, offHandHitSuppression = BCS:GetMissChance((playerLevel+3)*5, offHandSkill)
+
+			offHandMissChance = math.max(0, offHandMissChance - offHandChance) + 19
+			bossOffHandMissChance = math.max(0, bossMissChance - math.max(0, offHandChance -hitSuppression)) + 19
+
+			frame.tooltipSubtext = format(L.DUAL_WIELD_HIT_TOOLTIP, missChance, playerLevel, offHandMissChance, playerLevel, bossMissChance, bossOffHandMissChance, hitSuppression, offHandHitSuppression)
 		end
 	elseif ratingType == "SPELL" then
 		local spell_hit, spell_hit_fire, spell_hit_frost, spell_hit_arcane, spell_hit_shadow = BCS:GetSpellHitRating()

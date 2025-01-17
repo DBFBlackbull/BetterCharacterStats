@@ -46,3 +46,7 @@ Thanks to:
  - Removed dedicated tab for spell for each school
 - 1.12.3
  - No longer adds melee hit to ranged hit
+ - Correctly calculates miss chance factoring in weapon skill
+ - Calculates miss for at level and bosses
+ - Calculates hit chance suppression
+ - Show all information for main hand, off hand, and ranged

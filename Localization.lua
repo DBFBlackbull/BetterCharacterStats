@@ -104,7 +104,19 @@ BCS["L"] = {
 	["MELEE_HIT_TOOLTIP"] = [[|cffffffffHit|r
 	Result of an attack made with 
 	melee or ranged weapons.]],
-	
+
+	["PHYSICAL_HIT_TOOLTIP_HEADER"] = [[|cffffffffHit Chance %d%%|r]],
+	["PHYSICAL_HIT_TOOLTIP"] = [[%.1f%% chance to miss vs level %d monster
+	%.1f%% chance to miss vs boss monster
+	%.1f%% hit suppression vs boss monster]],
+
+	["DUAL_WIELD_HIT_TOOLTIP"] = [[%.1f%% chance to miss with Main hand vs level %d monster
+	%.1f%% chance to miss with Off hand vs level %d monster
+	%.1f%% chance to miss with Main hand vs boss monster
+	%.1f%% chance to miss witg Off hand vs boss monster
+	%.1f%% Main hand hit suppression vs boss monster
+	%.1f%% Off hand hit suppression vs boss monster]],
+
 	["SPELL_HIT_TOOLTIP"] = [[|cffffffffHit|r
 	Result of an attack made with 
 	spells.]],
@@ -133,8 +145,8 @@ BCS["L"] = {
 	PLAYERSTAT_SPELL_COMBAT = "Spell",
 	PLAYERSTAT_SPELL_SCHOOLS = "Schools",
 	
-	MELEE_HIT_RATING_COLON = "Hit Rating:",
-	RANGED_HIT_RATING_COLON = "Hit Rating:",
+	MELEE_HIT_RATING_COLON = "Hit Chance:",
+	RANGED_HIT_RATING_COLON = "Hit Chance:",
 	SPELL_HIT_RATING_COLON = "Hit Rating:",
 	MELEE_CRIT_COLON = "Crit Chance:",
 	RANGED_CRIT_COLON = "Crit Chance:",

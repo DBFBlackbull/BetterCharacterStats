@@ -259,6 +259,85 @@ function BCS:GetHitRating()
 	return melee_hit, ranged_hit, hit_debuff
 end
 
+function BCS:GetItemIDFromLink(itemLink)
+	if not itemLink then
+		return
+	end
+
+	local foundID, _ , itemID = string.find(itemLink, "item:(%d+)")
+	if not foundID then
+		return
+	end
+
+	return tonumber(itemID)
+end
+
+function BCS:GetWeaponSkill()
+	local main_hand_skill = 0
+	local main_hand_type
+	local off_hand_skill
+	local off_hand_type
+	local ranged_skill = 0
+	local ranged_type
+
+	local mainHandLink = GetInventoryItemLink("player", 16)
+	if mainHandLink then
+		local itemID = BCS:GetItemIDFromLink(mainHandLink)
+		_, _, _, _, _, main_hand_type = GetItemInfo(itemID)
+	end
+
+	if not main_hand_type then
+		main_hand_type = "Unarmed"
+	end
+
+	local offHandLink = GetInventoryItemLink("player", 17)
+	if offHandLink then
+		local itemID = BCS:GetItemIDFromLink(offHandLink)
+		_, _, _, _, _, off_hand_type = GetItemInfo(itemID)
+	end
+
+	local rangedLink = GetInventoryItemLink("player", 18)
+	if rangedLink then
+		local itemID = BCS:GetItemIDFromLink(rangedLink)
+		_, _, _, _, _, ranged_type = GetItemInfo(itemID)
+	end
+
+	local MAX_SKILLS = GetNumSkillLines()
+	for skill=0, MAX_SKILLS do
+		local skillName, _, _, skillRank, numTempPoints, skillModifier  = GetSkillLineInfo(skill)
+		if skillName and skillName == main_hand_type then
+			main_hand_skill = skillRank + numTempPoints + skillModifier
+		end
+
+		if skillName and skillName == off_hand_type then
+			off_hand_skill = skillRank + numTempPoints + skillModifier
+		end
+
+		if skillName and skillName == ranged_type then
+			ranged_type = skillRank + numTempPoints + skillModifier
+		end
+	end
+
+	return main_hand_skill, off_hand_skill, ranged_skill
+end
+
+function BCS:GetMissChance(targetDefense, attackerSkill)
+	local targetMiss = 0
+	local hitSuppression = 0
+
+	local skillDiff = targetDefense - attackerSkill
+	if skillDiff > 10 then
+		targetMiss = 5 + skillDiff * 0.2
+		hitSuppression = (skillDiff - 10) * 0.2
+	end
+
+	if skillDiff <= 10 then
+		targetMiss = 5 + skillDiff * 0.1
+	end
+
+	return targetMiss, hitSuppression
+end
+
 function BCS:GetSpellHitRating()
 	local hit = 0
 	local hit_fire = 0
