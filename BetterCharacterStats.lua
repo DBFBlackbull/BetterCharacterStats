@@ -422,9 +422,10 @@ function BCS:SetRating(statFrame, ratingType)
 	
 	local colorPos = "|cff20ff20"
 	local colorNeg = "|cffff2020"
-	
+
+	local melee_hit,ranged_hit,hit_debuff = BCS:GetHitRating()
 	if ratingType == "MELEE" then
-		local rating = BCS:GetHitRating()
+		local rating = math.max(0, melee_hit - hit_debuff)
 		if BCS.MELEEHIT[BCS.playerClass] then
 			if rating < BCS.MELEEHIT[BCS.playerClass][1] then
 				rating = colorNeg .. rating .. "%|r"
@@ -443,7 +444,7 @@ function BCS:SetRating(statFrame, ratingType)
 			frame.tooltipSubtext = L[BCS.playerClass .. "_MELEE_HIT_TOOLTIP"]
 		end
 	elseif ratingType == "RANGED" then
-		local rating = BCS:GetRangedHitRating()
+		local rating = math.max(0, ranged_hit - hit_debuff)
 		if BCS.MELEEHIT[BCS.playerClass] then
 			if rating < BCS.MELEEHIT[BCS.playerClass][1] then
 				rating = colorNeg .. rating .. "%|r"

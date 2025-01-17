@@ -44,3 +44,5 @@ Thanks to:
  - Added Blessing of Blackfathom
  - Better styling for spell power and power for each school
  - Removed dedicated tab for spell for each school
+- 1.12.3
+ - No longer adds melee hit to ranged hit
