@@ -9,7 +9,6 @@ local L = BCS["L"]
 local strfind = strfind
 local tonumber = tonumber
 local tinsert = tinsert
-local MAX_INVENTORY_SLOTS = 19
 
 local function tContains(table, item)
 	local index = 1
@@ -73,50 +72,36 @@ function BCS:GetHitRating()
 
 	local Hit_Set_Bonus = {}
 
-	for slot=0, MAX_INVENTORY_SLOTS do
-		local hasItem = BCS_Tooltip:SetInventoryItem("player", slot)
-		if hasItem then
-			local MAX_LINES = BCS_Tooltip:NumLines()
-			local SET_NAME = nil
-			
-			for line=1, MAX_LINES do
-				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
-				if left:GetText() then
-					local _,_, value = strfind(left:GetText(), L["Equip: Improves your chance to hit by (%d)%%."])
-					if value then
-						melee_hit = melee_hit + tonumber(value)
-						ranged_hit = ranged_hit + tonumber(value)
-					end
-
-					_,_, value = strfind(left:GetText(), L["/Hit %+(%d+)"])
-					if value then
-						melee_hit = melee_hit + tonumber(value)
-						ranged_hit = ranged_hit + tonumber(value)
-					end
-
-					_,_, value = strfind(left:GetText(), "(.+) %(%d/%d%)")
-					if value then
-						SET_NAME = value
-					end
-
-					_,_, value = strfind(left:GetText(), L["^Set: Improves your chance to hit by (%d)%%."])
-					if value and SET_NAME and not tContains(Hit_Set_Bonus, SET_NAME) then
-						tinsert(Hit_Set_Bonus, SET_NAME)
-						melee_hit = melee_hit + tonumber(value)
-						ranged_hit = ranged_hit + tonumber(value)
-						line = MAX_LINES
-					end
-
-					local _,_, value = strfind(left:GetText(), L["+(%d)%% Hit"])
-					if slot == 18 and value then
-						ranged_hit = ranged_hit + tonumber(value)
-						line = MAX_LINES
-					end
-				end
-			end
-			
+	BCS:IterateInventory(function(lineText, metaData)
+		local _,_, value = strfind(lineText, L["Equip: Improves your chance to hit by (%d)%%."])
+		if value then
+			melee_hit = melee_hit + tonumber(value)
+			ranged_hit = ranged_hit + tonumber(value)
 		end
-	end
+
+		_,_, value = strfind(lineText, L["/Hit %+(%d+)"])
+		if value then
+			melee_hit = melee_hit + tonumber(value)
+			ranged_hit = ranged_hit + tonumber(value)
+		end
+
+		local _,_, value = strfind(lineText, L["+(%d)%% Hit"]) -- Ranged hit from scope
+		if value and metaData.slot == 18 then
+			ranged_hit = ranged_hit + tonumber(value)
+		end
+
+		_,_, value = strfind(lineText, "(.+) %(%d/%d%)")
+		if value then
+			metaData.setName = value
+		end
+
+		_,_, value = strfind(lineText, L["^Set: Improves your chance to hit by (%d)%%."])
+		if value and metaData.setName and not tContains(Hit_Set_Bonus, metaData.setName) then
+			tinsert(Hit_Set_Bonus, metaData.setName)
+			melee_hit = melee_hit + tonumber(value)
+			ranged_hit = ranged_hit + tonumber(value)
+		end
+	end)
 
 	-- buffs
 	local _, _, hitFromAura = BCS:GetPlayerAura(L["Chance to hit increased by (%d)%%."])
@@ -366,43 +351,29 @@ function BCS:GetSpellHitRating()
 	local hit_Set_Bonus = {}
 	
 	-- scan gear
-	for slot=0, MAX_INVENTORY_SLOTS do
-		local hasItem = BCS_Tooltip:SetInventoryItem("player", slot)
-		
-		if hasItem then
-			local SET_NAME
-			local MAX_LINES = BCS_Tooltip:NumLines()
-			
-			for line=1, MAX_LINES do
-				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
-				
-				if left:GetText() then
-					local _,_, value = strfind(left:GetText(), L["Equip: Improves your chance to hit with spells by (%d)%%."])
-					if value then
-						hit = hit + tonumber(value)
-					end
-
-					local _,_, value = strfind(left:GetText(), L["/Spell Hit %+(%d+)"])
-					if value then
-						hit = hit + tonumber(value)
-					end
-					
-					local _,_, value = strfind(left:GetText(), "(.+) %(%d/%d%)")
-					if value then
-						SET_NAME = value
-					end
-
-					local _, _, value = strfind(left:GetText(), L["^Set: Improves your chance to hit with spells by (%d)%%."])
-					if value and SET_NAME and not tContains(hit_Set_Bonus, SET_NAME) then
-						tinsert(hit_Set_Bonus, SET_NAME)
-						hit = hit + tonumber(value)
-					end
-				end
-			end
-		
+	BCS:IterateInventory(function(lineText, metaData)
+		local _,_, value = strfind(lineText, L["Equip: Improves your chance to hit with spells by (%d)%%."])
+		if value then
+			hit = hit + tonumber(value)
 		end
-	end
-	
+
+		local _,_, value = strfind(lineText, L["/Spell Hit %+(%d+)"])
+		if value then
+			hit = hit + tonumber(value)
+		end
+
+		local _,_, value = strfind(lineText, "(.+) %(%d/%d%)")
+		if value then
+			metaData.setName = value
+		end
+
+		local _, _, value = strfind(lineText, L["^Set: Improves your chance to hit with spells by (%d)%%."])
+		if value and metaData.setName and not tContains(hit_Set_Bonus, metaData.setName) then
+			tinsert(hit_Set_Bonus, metaData.setName)
+			hit = hit + tonumber(value)
+		end
+	end)
+
 	-- scan talents
 	local MAX_TABS = GetNumTalentTabs()
 	
@@ -643,39 +614,25 @@ function BCS:GetSpellCritChance()
 	elseif class == "PALADIN" then
 		spellCrit = intelect / 29.5
 	end
-	
-	for slot=0, MAX_INVENTORY_SLOTS do
-		local hasItem = BCS_Tooltip:SetInventoryItem("player", slot)
-		
-		if hasItem then
-			local SET_NAME = nil
-			
-			for line=1, BCS_Tooltip:NumLines() do
-				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
 
-				if left:GetText() then
-					local _,_, value = strfind(left:GetText(), L["Equip: Improves your chance to get a critical strike with spells by (%d)%%."])
-					if value then
-						spellCrit = spellCrit + tonumber(value)
-					end
-					
-					_,_, value = strfind(left:GetText(), "(.+) %(%d/%d%)")
-					if value then
-						SET_NAME = value
-					end
-
-					_, _, value = strfind(left:GetText(), L["^Set: Improves your chance to get a critical strike with spells by (%d)%%."])
-					if value and SET_NAME and not tContains(Crit_Set_Bonus, SET_NAME) then
-						tinsert(Crit_Set_Bonus, SET_NAME)
-						spellCrit = spellCrit + tonumber(value)
-					end
-
-				end
-			end
+	BCS:IterateInventory(function (lineText, metaData)
+		local _,_, value = strfind(lineText, L["Equip: Improves your chance to get a critical strike with spells by (%d)%%."])
+		if value then
+			spellCrit = spellCrit + tonumber(value)
 		end
-		
-	end
-	
+
+		_,_, value = strfind(lineText, "(.+) %(%d/%d%)")
+		if value then
+			metaData.setName = value
+		end
+
+		_, _, value = strfind(lineText, L["^Set: Improves your chance to get a critical strike with spells by (%d)%%."])
+		if value and metaData.setName and not tContains(Crit_Set_Bonus, metaData.setName) then
+			tinsert(Crit_Set_Bonus, metaData.setName)
+			spellCrit = spellCrit + tonumber(value)
+		end
+	end)
+
 	-- buffs
 	local _, _, critFromAura = BCS:GetPlayerAura(L["Chance for a critical hit with a spell increased by (%d+)%%."])
 	if critFromAura then
@@ -721,72 +678,60 @@ function BCS:GetSpellPower()
 	}
 
 	-- scan gear
-	for slot=0, MAX_INVENTORY_SLOTS do
-		local hasItem = BCS_Tooltip:SetInventoryItem("player", slot)
+	BCS:IterateInventory(function(lineText, metaData)
+		local _,_, value = strfind(lineText, L["Equip: Increases damage and healing done by magical spells and effects by up to (%d+)."])
+		if value then
+			spellPower = spellPower + tonumber(value)
+		end
 
-		if hasItem then
-			local SET_NAME
+		_,_, value = strfind(lineText, L["Spell Damage %+(%d+)"])
+		if value then
+			spellPower = spellPower + tonumber(value)
+		end
 
-			for line=1, BCS_Tooltip:NumLines() do
-				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
+		_,_, value = strfind(lineText, L["^%+(%d+) Spell Damage and Healing"])
+		if value then
+			spellPower = spellPower + tonumber(value)
+		end
 
-				if left:GetText() then
-					local _,_, value = strfind(left:GetText(), L["Equip: Increases damage and healing done by magical spells and effects by up to (%d+)."])
-					if value then
-						spellPower = spellPower + tonumber(value)
-					end
+		_,_, value = strfind(lineText, L["^%+(%d+) Damage and Healing Spells"])
+		if value then
+			spellPower = spellPower + tonumber(value)
+		end
 
-					_,_, value = strfind(left:GetText(), L["Spell Damage %+(%d+)"])
-					if value then
-						spellPower = spellPower + tonumber(value)
-					end
+		_,_, value = strfind(lineText, "(.+) %(%d/%d%)")
+		if value then
+			metaData.setName = value
+		end
 
-					_,_, value = strfind(left:GetText(), L["^%+(%d+) Spell Damage and Healing"])
-					if value then
-						spellPower = spellPower + tonumber(value)
-					end
+		_, _, value = strfind(lineText, L["^Set: Increases damage and healing done by magical spells and effects by up to (%d+)%."])
+		if value and metaData.setName and not tContains(SpellPower_Set_Bonus, metaData.setName) then
+			tinsert(SpellPower_Set_Bonus, metaData.setName)
+			spellPower = spellPower + tonumber(value)
+		end
 
-					_,_, value = strfind(left:GetText(), L["^%+(%d+) Damage and Healing Spells"])
-					if value then
-						spellPower = spellPower + tonumber(value)
-					end
+		-- Check specific school damage
+		for school, schoolPower in pairs(SpellPower_Schools) do
+			local _,_, value = strfind(lineText, L["Equip: Increases damage done by "..school.." spells and effects by up to (%d+)."])
+			if value then
+				SpellPower_Schools[school] = schoolPower + tonumber(value)
+			end
 
-					_,_, value = strfind(left:GetText(), "(.+) %(%d/%d%)")
-					if value then
-						SET_NAME = value
-					end
+			if L[school.." Damage %+(%d+)"] then
+				_,_, value = strfind(lineText, L[school.." Damage %+(%d+)"])
+				if value then
+					SpellPower_Schools[school] = schoolPower + tonumber(value)
+				end
+			end
 
-					_, _, value = strfind(left:GetText(), L["^Set: Increases damage and healing done by magical spells and effects by up to (%d+)%."])
-					if value and SET_NAME and not tContains(SpellPower_Set_Bonus, SET_NAME) then
-						tinsert(SpellPower_Set_Bonus, SET_NAME)
-						spellPower = spellPower + tonumber(value)
-					end
-
-					-- Check specific school damage
-					for school, schoolPower in pairs(SpellPower_Schools) do
-						local _,_, value = strfind(left:GetText(), L["Equip: Increases damage done by "..school.." spells and effects by up to (%d+)."])
-						if value then
-							SpellPower_Schools[school] = schoolPower + tonumber(value)
-						end
-
-						if L[school.." Damage %+(%d+)"] then
-							_,_, value = strfind(left:GetText(), L[school.." Damage %+(%d+)"])
-							if value then
-								SpellPower_Schools[school] = schoolPower + tonumber(value)
-							end
-						end
-
-						if L["^%+(%d+) "..school.." Spell Damage"] then
-							_,_, value = strfind(left:GetText(), L["^%+(%d+) "..school.." Spell Damage"])
-							if value then
-								SpellPower_Schools[school] = schoolPower + tonumber(value)
-							end
-						end
-					end
+			if L["^%+(%d+) "..school.." Spell Damage"] then
+				_,_, value = strfind(lineText, L["^%+(%d+) "..school.." Spell Damage"])
+				if value then
+					SpellPower_Schools[school] = schoolPower + tonumber(value)
 				end
 			end
 		end
-	end
+	end)
 
 	-- scan talents
 	local MAX_TABS = GetNumTalentTabs()
@@ -861,44 +806,31 @@ function BCS:GetHealingPower()
 	local healPower = 0;
 	local healPower_Set_Bonus = {}
 
-	for slot=0, MAX_INVENTORY_SLOTS do
-		local hasItem = BCS_Tooltip:SetInventoryItem("player", slot)
-		
-		if hasItem then
-			local SET_NAME
-			
-			for line=1, BCS_Tooltip:NumLines() do
-				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
-				
-				if left:GetText() then
-					local _,_, value = strfind(left:GetText(), L["Equip: Increases healing done by spells and effects by up to (%d+)."])
-					if value then
-						healPower = healPower + tonumber(value)
-					end
-					_,_, value = strfind(left:GetText(), L["Healing Spells %+(%d+)"])
-					if value then
-						healPower = healPower + tonumber(value)
-					end
-					_,_, value = strfind(left:GetText(), L["^%+(%d+) Healing Spells"])
-					if value then
-						healPower = healPower + tonumber(value)
-					end
-					
-					_,_, value = strfind(left:GetText(), "(.+) %(%d/%d%)")
-					if value then
-						SET_NAME = value
-					end
-					_, _, value = strfind(left:GetText(), L["^Set: Increases healing done by spells and effects by up to (%d+)%."])
-					if value and SET_NAME and not tContains(healPower_Set_Bonus, SET_NAME) then
-						tinsert(healPower_Set_Bonus, SET_NAME)
-						healPower = healPower + tonumber(value)
-					end
-				end
-			end
+	BCS:IterateInventory(function(lineText, metaData)
+		local _,_, value = strfind(lineText, L["Equip: Increases healing done by spells and effects by up to (%d+)."])
+		if value then
+			healPower = healPower + tonumber(value)
 		end
-		
-	end
-	
+		_,_, value = strfind(lineText, L["Healing Spells %+(%d+)"])
+		if value then
+			healPower = healPower + tonumber(value)
+		end
+		_,_, value = strfind(lineText, L["^%+(%d+) Healing Spells"])
+		if value then
+			healPower = healPower + tonumber(value)
+		end
+
+		_,_, value = strfind(lineText, "(.+) %(%d/%d%)")
+		if value then
+			metaData.setName = value
+		end
+		_, _, value = strfind(lineText, L["^Set: Increases healing done by spells and effects by up to (%d+)%."])
+		if value and metaData.setName and not tContains(healPower_Set_Bonus, metaData.setName) then
+			tinsert(healPower_Set_Bonus, metaData.setName)
+			healPower = healPower + tonumber(value)
+		end
+	end)
+
 	-- buffs
 	local _, _, healPowerFromAura = BCS:GetPlayerAura(L["Healing done by magical spells is increased by up to (%d+)."])
 	if healPowerFromAura then
@@ -990,31 +922,20 @@ function BCS:GetManaRegen()
 	
 	local mp5 = 0;
 
-	for slot=0, MAX_INVENTORY_SLOTS do
-		local hasItem = BCS_Tooltip:SetInventoryItem("player", slot)
-		
-		if hasItem then
-			for line=1, BCS_Tooltip:NumLines() do
-				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
-				
-				if left:GetText() then
-					local _,_, value = strfind(left:GetText(), L["^Mana Regen %+(%d+)"])
-					if value then
-						mp5 = mp5 + tonumber(value)
-					end
-					_,_, value = strfind(left:GetText(), L["Equip: Restores (%d+) mana per 5 sec."])
-					if value then
-						mp5 = mp5 + tonumber(value)
-					end
-					_,_, value = strfind(left:GetText(), L["^%+(%d+) mana every 5 sec."])
-					if value then
-						mp5 = mp5 + tonumber(value)
-					end
-				end
-			end
+	BCS:IterateInventory(function(lineText, metaData)
+		local _,_, value = strfind(lineText, L["^Mana Regen %+(%d+)"])
+		if value then
+			mp5 = mp5 + tonumber(value)
 		end
-		
-	end
+		_,_, value = strfind(lineText, L["Equip: Restores (%d+) mana per 5 sec."])
+		if value then
+			mp5 = mp5 + tonumber(value)
+		end
+		_,_, value = strfind(lineText, L["^%+(%d+) mana every 5 sec."])
+		if value then
+			mp5 = mp5 + tonumber(value)
+		end
+	end)
 	
 	-- buffs
 	local _, _, mp5FromAura = BCS:GetPlayerAura(L["Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds."])
@@ -1023,4 +944,27 @@ function BCS:GetManaRegen()
 	end
 	
 	return base, casting, mp5
+end
+
+local MAX_INVENTORY_SLOTS = 19
+function BCS:IterateInventory(callbackFunc)
+	for slot=0, MAX_INVENTORY_SLOTS do
+		local hasItem = BCS_Tooltip:SetInventoryItem("player", slot)
+		if hasItem then
+			local MAX_LINES = BCS_Tooltip:NumLines()
+			local metaData = {
+				slot = slot,
+				setName = nil,
+			}
+
+			for line=1, MAX_LINES do
+				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
+				local lineText = left:GetText()
+				if lineText then
+					metaData.line = line
+					callbackFunc(lineText, metaData)
+				end
+			end
+		end
+	end
 end
