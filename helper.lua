@@ -10,6 +10,9 @@ local strfind = strfind
 local tonumber = tonumber
 local tinsert = tinsert
 
+local AURA_BUFF = "HELPFUL"
+local AURA_DEBUFF = "HARMFUL"
+
 local function tContains(table, item)
 	local index = 1
 	while table[index] do
@@ -103,41 +106,43 @@ function BCS:GetHitRating()
 		end
 	end)
 
-	-- buffs
-	local _, _, hitFromAura = BCS:GetPlayerAura(L["Chance to hit increased by (%d)%%."])
-	if hitFromAura then
-		melee_hit = melee_hit + tonumber(hitFromAura)
-		ranged_hit = ranged_hit + tonumber(hitFromAura)
-	end
+	BCS:IterateAuras(AURA_BUFF, function(lineText)
+		local _, _, hitFromAura = strfind(lineText, L["Chance to hit increased by (%d)%%."])
+		if hitFromAura then
+			melee_hit = melee_hit + tonumber(hitFromAura)
+			ranged_hit = ranged_hit + tonumber(hitFromAura)
+		end
 
-	  _, _, hitFromAura = BCS:GetPlayerAura(L["Improves your chance to hit by (%d+)%%."])
-	if hitFromAura then
-		melee_hit = melee_hit + tonumber(hitFromAura)
-		ranged_hit = ranged_hit + tonumber(hitFromAura)
-	end
+		_, _, hitFromAura = strfind(lineText, L["Improves your chance to hit by (%d+)%%."])
+		if hitFromAura then
+			melee_hit = melee_hit + tonumber(hitFromAura)
+			ranged_hit = ranged_hit + tonumber(hitFromAura)
+		end
 
-	_, _, hitFromAura = BCS:GetPlayerAura(L["Increases attack power by %d+ and chance to hit by (%d+)%%."])
-	if hitFromAura then
-		melee_hit = melee_hit + tonumber(hitFromAura)
-		ranged_hit = ranged_hit + tonumber(hitFromAura)
-	end
+		_, _, hitFromAura = strfind(lineText, L["Increases attack power by %d+ and chance to hit by (%d+)%%."])
+		if hitFromAura then
+			melee_hit = melee_hit + tonumber(hitFromAura)
+			ranged_hit = ranged_hit + tonumber(hitFromAura)
+		end
+	end)
 
-	-- debuffs
-	_, _, hitFromAura = BCS:GetPlayerAura(L["Chance to hit reduced by (%d+)%%."], 'HARMFUL')
-	if hitFromAura then
-		hit_debuff = hit_debuff + tonumber(hitFromAura)
-	end
+	BCS:IterateAuras(AURA_DEBUFF, function(lineText)
+		local _, _, hitFromAura = strfind(lineText, L["Chance to hit reduced by (%d+)%%."])
+		if hitFromAura then
+			hit_debuff = hit_debuff + tonumber(hitFromAura)
+		end
 
-	_, _, hitFromAura = BCS:GetPlayerAura(L["Chance to hit decreased by (%d+)%% and %d+ Nature damage every %d+ sec."], 'HARMFUL')
-	if hitFromAura then
-		hit_debuff = hit_debuff + tonumber(hitFromAura)
-	end
+		_, _, hitFromAura = strfind(lineText, L["Chance to hit decreased by (%d+)%% and %d+ Nature damage every %d+ sec."])
+		if hitFromAura then
+			hit_debuff = hit_debuff + tonumber(hitFromAura)
+		end
 
-	hitFromAura = BCS:GetPlayerAura(L["Lowered chance to hit."], 'HARMFUL')
-	if hitFromAura then
-		hit_debuff = hit_debuff + 25
-	end
-	
+		hitFromAura = strfind(lineText, L["Lowered chance to hit."])
+		if hitFromAura then
+			hit_debuff = hit_debuff + 25
+		end
+	end)
+
 	local MAX_TABS = GetNumTalentTabs()
 	-- speedup
 	if Cache_GetHitRating_Tab and Cache_GetHitRating_Talent then
@@ -634,32 +639,40 @@ function BCS:GetSpellCritChance()
 	end)
 
 	-- buffs
-	local _, _, critFromAura = BCS:GetPlayerAura(L["Chance for a critical hit with a spell increased by (%d+)%%."])
-	if critFromAura then
-		spellCrit = spellCrit + tonumber(critFromAura)
-	end
-	_, _, critFromAura = BCS:GetPlayerAura(L["While active, target's critical hit chance with spells and attacks increases by 10%%."])
-	if critFromAura then
-		spellCrit = spellCrit + 10
-	end
-	_, _, critFromAura = BCS:GetPlayerAura(L["Increases chance for a melee, ranged, or spell critical by (%d+)%% and all attributes by %d+."])
-	if critFromAura then
-		spellCrit = spellCrit + tonumber(critFromAura)
-	end
-	critFromAura = BCS:GetPlayerAura(L["Increases critical chance of spells by 10%%, melee and ranged by 5%% and grants 140 attack power. 120 minute duration."])
-	if critFromAura then
-		spellCrit = spellCrit + 10
-	end
-	_, _, critFromAura = BCS:GetPlayerAura(L["Critical strike chance with spells and melee attacks increased by (%d+)%%."])
-	if critFromAura then
-		spellCrit = spellCrit + tonumber(critFromAura)
-	end
-	-- debuffs
-	_, _, _, critFromAura = BCS:GetPlayerAura(L["Melee critical-hit chance reduced by (%d+)%%.\r\nSpell critical-hit chance reduced by (%d+)%%."], 'HARMFUL')
-	if critFromAura then
-		spellCrit = spellCrit - tonumber(critFromAura)
-	end
-	
+	BCS:IterateAuras(AURA_BUFF, function(lineText)
+		local _, _, critFromAura = strfind(lineText, L["Chance for a critical hit with a spell increased by (%d+)%%."])
+		if critFromAura then
+			spellCrit = spellCrit + tonumber(critFromAura)
+		end
+
+		_, _, critFromAura = strfind(lineText, L["While active, target's critical hit chance with spells and attacks increases by 10%%."])
+		if critFromAura then
+			spellCrit = spellCrit + 10
+		end
+
+		_, _, critFromAura = strfind(lineText, L["Increases chance for a melee, ranged, or spell critical by (%d+)%% and all attributes by %d+."])
+		if critFromAura then
+			spellCrit = spellCrit + tonumber(critFromAura)
+		end
+
+		critFromAura = strfind(lineText, L["Increases critical chance of spells by 10%%, melee and ranged by 5%% and grants 140 attack power. 120 minute duration."])
+		if critFromAura then
+			spellCrit = spellCrit + 10
+		end
+
+		_, _, critFromAura = strfind(lineText, L["Critical strike chance with spells and melee attacks increased by (%d+)%%."])
+		if critFromAura then
+			spellCrit = spellCrit + tonumber(critFromAura)
+		end
+	end)
+
+	BCS:IterateAuras(AURA_DEBUFF, function(lineText)
+		local _, _, _, critFromAura = strfind(lineText, L["Melee critical-hit chance reduced by (%d+)%%.\r\nSpell critical-hit chance reduced by (%d+)%%."], 'HARMFUL')
+		if critFromAura then
+			spellCrit = spellCrit - tonumber(critFromAura)
+		end
+	end)
+
 	return spellCrit
 end
 
@@ -765,39 +778,41 @@ function BCS:GetSpellPower()
 	end
 
 	-- Very Berry Cream
-	local _, _, spellPowerFromAura = BCS:GetPlayerAura(L["Magical damage dealt is increased by up to (%d+)."])
-	if spellPowerFromAura then
-		spellPower = spellPower + tonumber(spellPowerFromAura)
-		damagePower = damagePower + tonumber(spellPowerFromAura)
-	end
-
-	-- (Greater) Arcane Elixir
-	local _, _, spellPowerFromAura = BCS:GetPlayerAura(L["Magical damage dealt by spells and abilities is increased by up to (%d+)."])
-	if spellPowerFromAura then
-		spellPower = spellPower + tonumber(spellPowerFromAura)
-		damagePower = damagePower + tonumber(spellPowerFromAura)
-	end
-
-	-- Flask of Supreme power
-	local _, _, spellPowerFromAura = BCS:GetPlayerAura(L["Spell damage increased by up to (%d+)."])
-	if spellPowerFromAura then
-		spellPower = spellPower + tonumber(spellPowerFromAura)
-		damagePower = damagePower + tonumber(spellPowerFromAura)
-	end
-
-	-- Fire, Frost, Shadow power Elixir
-	for school, schoolPower in pairs(SpellPower_Schools) do
-		local _, _, schoolPowerFromAura = BCS:GetPlayerAura(L[school.." damage dealt by spells and abilities is increased by up to (%d+)."])
-		if schoolPowerFromAura then
-			SpellPower_Schools[school] = schoolPower + tonumber(schoolPowerFromAura)
+	BCS:IterateAuras(nil, function(lineText)
+		local _, _, spellPowerFromAura = strfind(lineText, L["Magical damage dealt is increased by up to (%d+)."])
+		if spellPowerFromAura then
+			spellPower = spellPower + tonumber(spellPowerFromAura)
+			damagePower = damagePower + tonumber(spellPowerFromAura)
 		end
-	end
 
-	-- Blessing of Blackfathom debuff
-	local _, _, schoolPowerFromAura = BCS:GetPlayerAura(L["Increases frost damage done by (%d+)"], 'HARMFUL')
-	if schoolPowerFromAura then
-		SpellPower_Schools["Frost"] = SpellPower_Schools["Frost"] + tonumber(schoolPowerFromAura)
-	end
+		-- (Greater) Arcane Elixir
+		_, _, spellPowerFromAura = strfind(lineText, L["Magical damage dealt by spells and abilities is increased by up to (%d+)."])
+		if spellPowerFromAura then
+			spellPower = spellPower + tonumber(spellPowerFromAura)
+			damagePower = damagePower + tonumber(spellPowerFromAura)
+		end
+
+		-- Flask of Supreme power
+		_, _, spellPowerFromAura = strfind(lineText, L["Spell damage increased by up to (%d+)."])
+		if spellPowerFromAura then
+			spellPower = spellPower + tonumber(spellPowerFromAura)
+			damagePower = damagePower + tonumber(spellPowerFromAura)
+		end
+
+		-- Fire, Frost, Shadow power Elixir
+		for school, schoolPower in pairs(SpellPower_Schools) do
+			local _, _, schoolPowerFromAura = strfind(lineText, L[school.." damage dealt by spells and abilities is increased by up to (%d+)."])
+			if schoolPowerFromAura then
+				SpellPower_Schools[school] = schoolPower + tonumber(schoolPowerFromAura)
+			end
+		end
+
+		-- Blessing of Blackfathom debuff
+		local _, _, schoolPowerFromAura = strfind(lineText, L["Increases frost damage done by (%d+)"])
+		if schoolPowerFromAura then
+			SpellPower_Schools["Frost"] = SpellPower_Schools["Frost"] + tonumber(schoolPowerFromAura)
+		end
+	end)
 
 	return spellPower, SpellPower_Schools, damagePower
 end
@@ -961,9 +976,32 @@ function BCS:IterateInventory(callbackFunc)
 				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
 				local lineText = left:GetText()
 				if lineText then
-					metaData.line = line
 					callbackFunc(lineText, metaData)
 				end
+			end
+		end
+	end
+end
+
+function BCS:IterateAuras(buffFilter, callbackFunc)
+	if not buffFilter then
+		buffFilter = "HELPFUL|HARMFUL"
+	end
+
+	for i=0, 200 do
+		local index = GetPlayerBuff(i, buffFilter)
+		if index == 0 then -- test if this is correct
+			return
+		end
+
+		BCS_Tooltip:SetPlayerBuff(index)
+		local MAX_LINES = BCS_Tooltip:NumLines()
+
+		for line=1, MAX_LINES do
+			local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
+			local lineText = left:GetText()
+			if lineText then
+				callbackFunc(lineText)
 			end
 		end
 	end
