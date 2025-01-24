@@ -105,7 +105,13 @@ BCS["L"] = {
 	Result of an attack made with 
 	melee or ranged weapons.]],
 
-	["PHYSICAL_HIT_TOOLTIP_HEADER"] = [[|cffffffffHit Chance %d%%|r]],
+	["MAIN_HAND_HIT_TOOLTIP_HEADER"] = "Hit %d / %d%%",
+	["PHYSICAL_HIT_TOOLTIP"] = [[Reduces the chance your attacks miss
+	%.1f%% chance to miss vs level %d
+	%.1f%% chance to miss vs boss
+	%.1f%% hit suppression vs boss]],
+
+	["MAIN_HAND_HIT_TOOLTIP_HEADER"] = "Main Hand Hit %d / %d%%",
 	["PHYSICAL_HIT_TOOLTIP"] = [[Reduces the chance your attacks miss
 	%.1f%% chance to miss vs level %d
 	%.1f%% chance to miss vs boss
@@ -153,7 +159,7 @@ BCS["L"] = {
 	PLAYERSTAT_SPELL_COMBAT = "Spell",
 	PLAYERSTAT_SPELL_SCHOOLS = "Schools",
 	
-	MELEE_HIT_RATING_COLON = "Hit Chance:",
+	MELEE_HIT_RATING_COLON = "Hit:",
 	RANGED_HIT_RATING_COLON = "Hit Chance:",
 	SPELL_HIT_RATING_COLON = "Hit Rating:",
 	MELEE_CRIT_COLON = "Crit Chance:",
