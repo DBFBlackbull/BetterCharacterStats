@@ -377,7 +377,7 @@ function BCS:SetAttackPower(statFrame)
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 		GameTooltip:SetText(this.tooltip)
-		GameTooltip:AddLine(this.tooltipSubtext)
+		GameTooltip:AddLine(this.tooltipSubtext, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 		GameTooltip:Show()
 	end)
 	frame:SetScript("OnLeave", function()
@@ -426,7 +426,11 @@ function BCS:SetRating(statFrame, ratingType)
 
 		local mainHandModifier = weaponSkills.main_hand.temp+weaponSkills.main_hand.modifier
 		local hitTotal = melee_hit-hit_debuff
-		local hitChanceString = format("%s / %s", BCS:ModifierColor(mainHandModifier, weaponSkills.main_hand.total), BCS:ModifierColor(hit_debuff*-1, hitTotal.."%"))
+		local hitChanceString = BCS:ModifierColor(mainHandModifier, weaponSkills.main_hand.total)
+		if weaponSkills.off_hand then
+			hitChanceString = hitChanceString .. " / " .. BCS:ModifierColor(weaponSkills.off_hand.temp+weaponSkills.off_hand.modifier, weaponSkills.off_hand.total)
+		end
+		hitChanceString = hitChanceString .. " / " .. BCS:ModifierColor(hit_debuff*-1, hitTotal.."%")
 		text:SetText(hitChanceString)
 
 		local dualWieldPenalty = weaponSkills.off_hand and 19 or 0
@@ -596,23 +600,33 @@ function BCS:SetGlancingBlow(statFrame)
 
 	local targetDefense = (BCS.player.level+3)*5
 
-	local mainHandSkill, offHandSkill = BCS:GetWeaponSkills()
-	local mainHandGlanceChance, mainHandGlancePen = BCS:GetGlancingBlow(targetDefense, mainHandSkill, BCS.player.level)
+	local weaponSkills = BCS:GetWeaponSkills()
+	local mainHandGlanceChance, mainHandGlancePen = BCS:GetGlancingBlow(targetDefense, weaponSkills.main_hand.total, BCS.player.level)
+	local colonValue = format("%d%%", mainHandGlancePen)
 
-	--if offHandSkill then
-	--	offHandGlanceChance, offHandGlancePen = BCS:GetGlancingBlow(targetDefense, offHandSkill, playerLevel)
-	--end
+	local offHandGlanceChance, offHandGlancePen
+	if weaponSkills.off_hand then
+		offHandGlanceChance, offHandGlancePen = BCS:GetGlancingBlow(targetDefense, weaponSkills.off_hand.total, BCS.player.level)
+		colonValue = format("%s / %d%%", colonValue, offHandGlancePen)
+	end
 
 	label:SetText(L.MELEE_GLANCING_BLOW_COLON)
-	text:SetText(format("%.1f%%", mainHandGlancePen))
-
-	frame.tooltip = format(L.GLANCING_BLOW_TOOLTIP_HEADER, mainHandGlancePen)
-	frame.tooltipSubtext = format(L.GLANCING_BLOW_TOOLTIP, mainHandGlanceChance, mainHandGlancePen)
+	text:SetText(colonValue)
 
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-		GameTooltip:SetText(this.tooltip)
-		GameTooltip:AddLine(this.tooltipSubtext)
+		GameTooltip:SetText(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, L.GLANCING_BLOW_TOOLTIP_HEADER))
+		GameTooltip:AddLine(L.GLANCING_BLOW_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Main Hand"))
+		BCS:AddDoubleLine("Glancing Blow Chance (vs Boss):", format("%.1f%%",mainHandGlanceChance))
+		BCS:AddDoubleLine("Glancing Blow Penalty (vs Boss):", format("%.1f%%",mainHandGlancePen))
+		if weaponSkills.off_hand then
+			GameTooltip:AddLine(" ")
+			GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Off Hand"))
+			BCS:AddDoubleLine("Glancing Blow Chance (vs Boss):", format("%.1f%%",offHandGlanceChance))
+			BCS:AddDoubleLine("Glancing Blow Penalty (vs Boss):", format("%.1f%%",offHandGlancePen))
+		end
 		GameTooltip:Show()
 	end)
 	frame:SetScript("OnLeave", function()
@@ -897,7 +911,7 @@ function BCS:SetRangedAttackPower(statFrame)
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 		GameTooltip:SetText(this.tooltip)
-		GameTooltip:AddLine(this.tooltipSubtext)
+		GameTooltip:AddLine(this.tooltipSubtext, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 		GameTooltip:Show()
 	end)
 	frame:SetScript("OnLeave", function()

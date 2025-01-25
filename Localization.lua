@@ -98,38 +98,11 @@ BCS["L"] = {
 	["Destruction spell critical hit chance increased by (%d+)%%."] = "Destruction spell critical hit chance increased by (%d+)%%.",
 	["Critical strike chance with spells and melee attacks increased by (%d+)%%."] = "Critical strike chance with spells and melee attacks increased by (%d+)%%.",
 
-	["MELEE_ATTACK_POWER_TOOLTIP"] = "Increase damage with melee weapons by\r\n %.1f damage per second.",
-	["RANGED_ATTACK_POWER_TOOLTIP"] = "Increase damage with ranged weapons by\r\n %.1f damage per second.",
+	["MELEE_ATTACK_POWER_TOOLTIP"] = "Increase damage with melee weapons by %.1f damage per second.",
+	["RANGED_ATTACK_POWER_TOOLTIP"] = "Increase damage with ranged weapons by %.1f damage per second.",
 
-	["MELEE_HIT_TOOLTIP"] = [[|cffffffffHit|r
-	Result of an attack made with 
-	melee or ranged weapons.]],
-
-	["MAIN_HAND_HIT_TOOLTIP_HEADER"] = "Hit %d / %d%%",
-	["PHYSICAL_HIT_TOOLTIP"] = [[Reduces the chance your attacks miss
-	%.1f%% chance to miss vs level %d
-	%.1f%% chance to miss vs boss
-	%.1f%% hit suppression vs boss]],
-
-	["MAIN_HAND_HIT_TOOLTIP_HEADER"] = "Main Hand Hit %d / %d%%",
-	["PHYSICAL_HIT_TOOLTIP"] = [[Reduces the chance your attacks miss
-	%.1f%% chance to miss vs level %d
-	%.1f%% chance to miss vs boss
-	%.1f%% hit suppression vs boss]],
-
-	["DUAL_WIELD_HIT_TOOLTIP"] = [[Reduces the chance your attacks miss
-	%.1f%% chance to miss with Main hand vs level %d
-	%.1f%% chance to miss with Off hand vs level %d
-	%.1f%% chance to miss with Main hand vs boss
-	%.1f%% chance to miss witg Off hand vs boss
-	%.1f%% Main hand hit suppression vs boss
-	%.1f%% Off hand hit suppression vs boss]],
-
-
-	["GLANCING_BLOW_TOOLTIP_HEADER"] = [[|cffffffffGlancing Blow Penalty %.1f%%|r]],
-	["GLANCING_BLOW_TOOLTIP"] = [[Auto attacks against Boss level monsters have
-	%d%% chance to glance, dealing reduced damage.
-	Glancing blow penalty: %.1f%%]],
+	["GLANCING_BLOW_TOOLTIP_HEADER"] = "Glancing Blows",
+	["GLANCING_BLOW_TOOLTIP"] = "Auto attacks against Boss level monsters have a chance to glance, dealing reduced damage.",
 
 	["SPELL_HIT_TOOLTIP"] = [[|cffffffffHit|r
 	Result of an attack made with 
