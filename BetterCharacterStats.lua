@@ -74,49 +74,52 @@ function BCS:OnLoad()
 	self.Frame:RegisterEvent("UNIT_INVENTORY_CHANGED") -- fires when equipment changes
 	self.Frame:RegisterEvent("CHARACTER_POINTS_CHANGED") -- fires when learning talent
 	self.Frame:RegisterEvent("PLAYER_AURAS_CHANGED") -- buffs/warrior stances
-	
+	self.Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self.Frame:RegisterEvent("PLAYER_LEVEL_UP")
+
 	local _, unitClass = UnitClass("player")
 	self.player = {
 		name = UnitName("player"),
-		level = UnitLevel("player"),
 		class = unitClass,
 	}
 end
 
 function BCS:OnEvent()
-	--[[if BCS.Debug then
-		local t = {
-			E = event,
-			arg1 = arg1 or "nil",
-			arg2 = arg2 or "nil",
-			arg3 = arg3 or "nil",
-			arg4 = arg4 or "nil",
-			arg5 = arg5 or "nil",
-		}
-		tinsert(BCS.DebugStack, t)
-	end]]
-	
-	if
-		event == "PLAYER_AURAS_CHANGED" or
-		event == "CHARACTER_POINTS_CHANGED"
-	then
+	if event == "PLAYER_AURAS_CHANGED" or event == "CHARACTER_POINTS_CHANGED" then
 		if BCS.PaperDollFrame:IsVisible() then
-			BCS:UpdateStats()
-		else
-			BCS.needUpdate = true
+			return BCS:UpdateStats()
 		end
-	elseif event == "UNIT_INVENTORY_CHANGED" and arg1 == "player" then
+
+		BCS.needUpdate = true
+		return
+	end
+
+	if event == "UNIT_INVENTORY_CHANGED" and arg1 == "player" then
 		if BCS.PaperDollFrame:IsVisible() then
-			BCS:UpdateStats()
-		else
-			BCS.needUpdate = true
+			return BCS:UpdateStats()
 		end
-	elseif event == "ADDON_LOADED" and arg1 == "BetterCharacterStats" then
+
+		BCS.needUpdate = true
+		return
+	end
+
+	if event == "ADDON_LOADED" and arg1 == "BetterCharacterStats" then
+		BCS:Print(event)
 		IndexLeft = BCSConfig["DropdownLeft"] or BCS.PLAYERSTAT_DROPDOWN_OPTIONS[1]
 		IndexRight = BCSConfig["DropdownRight"] or BCS.PLAYERSTAT_DROPDOWN_OPTIONS[2]
 
 		UIDropDownMenu_SetSelectedValue(PlayerStatFrameLeftDropDown, IndexLeft)
 		UIDropDownMenu_SetSelectedValue(PlayerStatFrameRightDropDown, IndexRight)
+
+		return
+	end
+
+	if event == "PLAYER_ENTERING_WORLD" then
+		BCS.player.level = UnitLevel("player")
+	end
+
+	if event == "PLAYER_LEVEL_UP" then
+		BCS.player.level = arg1
 	end
 end
 
@@ -619,11 +622,15 @@ function BCS:SetGlancingBlow(statFrame)
 		GameTooltip:AddLine(L.GLANCING_BLOW_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Main Hand"))
+		local mainHandModifier = weaponSkills.main_hand.modifier+weaponSkills.main_hand.temp
+		BCS:AddDoubleLine(format("Weapon skill (%s):", weaponSkills.main_hand.type), BCS:ModifierText(mainHandModifier, weaponSkills.main_hand.skill, weaponSkills.main_hand.total))
 		BCS:AddDoubleLine("Glancing Blow Chance (vs Boss):", format("%.1f%%",mainHandGlanceChance))
 		BCS:AddDoubleLine("Glancing Blow Penalty (vs Boss):", format("%.1f%%",mainHandGlancePen))
 		if weaponSkills.off_hand then
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Off Hand"))
+			local offHandModifier = weaponSkills.off_hand.modifier+weaponSkills.off_hand.temp
+			BCS:AddDoubleLine(format("Weapon skill (%s):", weaponSkills.off_hand.type), BCS:ModifierText(offHandModifier, weaponSkills.off_hand.skill, weaponSkills.off_hand.total))
 			BCS:AddDoubleLine("Glancing Blow Chance (vs Boss):", format("%.1f%%",offHandGlanceChance))
 			BCS:AddDoubleLine("Glancing Blow Penalty (vs Boss):", format("%.1f%%",offHandGlancePen))
 		end

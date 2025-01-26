@@ -102,7 +102,7 @@ BCS["L"] = {
 	["RANGED_ATTACK_POWER_TOOLTIP"] = "Increase damage with ranged weapons by %.1f damage per second.",
 
 	["GLANCING_BLOW_TOOLTIP_HEADER"] = "Glancing Blows",
-	["GLANCING_BLOW_TOOLTIP"] = "Auto attacks against Boss level monsters have a chance to glance, dealing reduced damage.",
+	["GLANCING_BLOW_TOOLTIP"] = "Auto attacks against Boss level monsters have a chance to glance, dealing reduced damage. Increasing weapon skill reduces the chance and damage penalty.",
 
 	["SPELL_HIT_TOOLTIP"] = [[|cffffffffHit|r
 	Result of an attack made with 
