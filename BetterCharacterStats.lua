@@ -104,13 +104,11 @@ function BCS:OnEvent()
 	end
 
 	if event == "ADDON_LOADED" and arg1 == "BetterCharacterStats" then
-		BCS:Print(event)
 		IndexLeft = BCSConfig["DropdownLeft"] or BCS.PLAYERSTAT_DROPDOWN_OPTIONS[1]
 		IndexRight = BCSConfig["DropdownRight"] or BCS.PLAYERSTAT_DROPDOWN_OPTIONS[2]
 
 		UIDropDownMenu_SetSelectedValue(PlayerStatFrameLeftDropDown, IndexLeft)
 		UIDropDownMenu_SetSelectedValue(PlayerStatFrameRightDropDown, IndexRight)
-
 		return
 	end
 
