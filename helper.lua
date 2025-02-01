@@ -323,7 +323,6 @@ function BCS:GetSpellHitRating()
 	local hit_shadow = 0
 	local hit_Set_Bonus = {}
 
-	-- scan gear
 	BCS:IterateInventory(function(lineText, metaData)
 		local _,_, value = strfind(lineText, L["Equip: Improves your chance to hit with spells by (%d)%%."])
 		if value then
@@ -347,57 +346,23 @@ function BCS:GetSpellHitRating()
 		end
 	end)
 
-	-- scan talents
-	local MAX_TABS = GetNumTalentTabs()
+	if BCS.player.class == "MAGE" then
+		local _, _, _, _, rank = GetTalentInfo(1, 2) -- Arcane, Arcane Focus
+		hit_arcane = hit_arcane + rank * 2
 
-	for tab = 1, MAX_TABS do
-		local MAX_TALENTS = GetNumTalents(tab)
+		local _, _, _, _, rank = GetTalentInfo(3, 3) -- Frost, Elemental Precision
+		hit_fire  = hit_fire + rank * 2
+		hit_frost = hit_frost + rank * 2
+	end
 
-		for talent = 1, MAX_TALENTS do
-			BCS_Tooltip:SetTalent(tab, talent)
-			local MAX_LINES = BCS_Tooltip:NumLines()
+	if BCS.player.class == "PRIEST" then
+		local _, _, _, _, rank = GetTalentInfo(3, 5) -- Shadow, Shadow Focus
+		hit_shadow = hit_shadow + rank * 2
+	end
 
-			for line = 1, MAX_LINES do
-				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
-				if left:GetText() then
-					-- Mage
-					-- Elemental Precision
-					local _, _, value = strfind(left:GetText(), L["Reduces the chance that the opponent can resist your Frost and Fire spells by (%d)%%."])
-					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
-					if value and rank > 0 then
-						hit_fire = hit_fire + tonumber(value)
-						hit_frost = hit_frost + tonumber(value)
-						line = MAX_LINES
-					end
-
-					-- Arcane Focus
-					local _, _, value = strfind(left:GetText(), L["Reduces the chance that the opponent can resist your Arcane spells by (%d+)%%."])
-					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
-					if value and rank > 0 then
-						hit_arcane = hit_arcane + tonumber(value)
-						line = MAX_LINES
-					end
-
-					-- Priest
-					-- Shadow Focus
-					local _, _, value = strfind(left:GetText(), L["Reduces your target's chance to resist your Shadow spells by (%d+)%%."])
-					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
-					if value and rank > 0 then
-						hit_shadow = hit_shadow + tonumber(value)
-						line = MAX_LINES
-					end
-
-					-- Shaman
-					-- Nature's Guidance
-					local _, _, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
-					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
-					if value and rank > 0 then
-						hit = hit + tonumber(value)
-						line = MAX_LINES
-					end
-				end
-			end
-		end
+	if BCS.player.class == "SHAMAN" then
+		local _, _, _, _, rank = GetTalentInfo(3, 6) -- Restoration, Nature's Guidance
+		hit = hit + rank
 	end
 
 	-- buffs
@@ -654,7 +619,6 @@ function BCS:GetSpellPower()
 		["Shadow"] = 0,
 	}
 
-	-- scan gear
 	BCS:IterateInventory(function(lineText, metaData)
 		local _,_, value = strfind(lineText, L["Equip: Increases damage and healing done by magical spells and effects by up to (%d+)."])
 		if value then
