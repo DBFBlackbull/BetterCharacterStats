@@ -591,7 +591,8 @@ function BCS:SetMeleeCritChance(statFrame)
 	local label = getglobal(statFrame:GetName() .. "Label")
 	
 	label:SetText(L.MELEE_CRIT_COLON)
-	text:SetText(format("%.2f%%", BCS:GetCritChance()))
+	local melee_crit = BCS:GetCritChance()
+	text:SetText(format("%.2f%%", melee_crit))
 end
 
 function BCS:SetGlancingBlow(statFrame)
@@ -641,7 +642,6 @@ end
 
 
 function BCS:SetSpellCritChance(statFrame)
-	local frame = statFrame 
 	local text = getglobal(statFrame:GetName() .. "StatText")
 	local label = getglobal(statFrame:GetName() .. "Label")
 	
@@ -650,12 +650,12 @@ function BCS:SetSpellCritChance(statFrame)
 end
 
 function BCS:SetRangedCritChance(statFrame)
-	local frame = statFrame 
 	local text = getglobal(statFrame:GetName() .. "StatText")
 	local label = getglobal(statFrame:GetName() .. "Label")
 	
 	label:SetText(L.RANGED_CRIT_COLON)
-	text:SetText(format("%.2f%%", BCS:GetRangedCritChance()))
+	local _, ranged_crit = BCS:GetCritChance()
+	text:SetText(format("%.2f%%", ranged_crit))
 end
 
 function BCS:SetHealing(statFrame)
