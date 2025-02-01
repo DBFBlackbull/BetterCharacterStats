@@ -654,6 +654,12 @@ function BCS:SetRangedCritChance(statFrame)
 	local label = getglobal(statFrame:GetName() .. "Label")
 	
 	label:SetText(L.RANGED_CRIT_COLON)
+	local weaponSkills = BCS:GetWeaponSkills()
+	if not weaponSkills.ranged then
+		text:SetText(NOT_APPLICABLE)
+		return
+	end
+
 	local _, ranged_crit = BCS:GetCritChance()
 	text:SetText(format("%.2f%%", ranged_crit))
 end
