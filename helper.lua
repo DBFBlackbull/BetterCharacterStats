@@ -674,37 +674,6 @@ function BCS:GetSpellPower()
 		end
 	end)
 
-	-- scan talents
-	local MAX_TABS = GetNumTalentTabs()
-	for tab = 1, MAX_TABS do
-		local MAX_TALENTS = GetNumTalents(tab)
-
-		for talent = 1, MAX_TALENTS do
-			BCS_Tooltip:SetTalent(tab, talent)
-			local MAX_LINES = BCS_Tooltip:NumLines()
-
-			for line = 1, MAX_LINES do
-				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
-				if left:GetText() then
-					-- Priest
-					-- Spiritual Guidance
-					local _, _, value = strfind(left:GetText(), L["Increases spell damage and healing by up to (%d+)%% of your total Spirit."])
-					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
-					if value and rank > 0 then
-						local stat, effectiveStat = UnitStat("player", 5)
-						spellPower = spellPower + floor(((tonumber(value) / 100) * effectiveStat))
-
-						-- nothing more is currenlty supported, break out of the loops
-						line = MAX_LINES
-						talent = MAX_TALENTS
-						tab = MAX_TABS
-					end
-				end
-			end
-
-		end
-	end
-
 	BCS:IterateAuras(nil, function(lineText)
 		-- Very Berry Cream
 		local _, _, spellPowerFromAura = strfind(lineText, L["Magical damage dealt is increased by up to (%d+)."])
@@ -741,6 +710,12 @@ function BCS:GetSpellPower()
 			SpellPower_Schools["Frost"] = SpellPower_Schools["Frost"] + tonumber(schoolPowerFromAura)
 		end
 	end)
+
+	if BCS.player.class == "PRIEST" then
+		local _, _, _, _, rank = GetTalentInfo(2, 14) -- Holy, Spiritual Guidance
+		local _, spirit = UnitStat("player", 5)
+		spellPower = spellPower + floor(rank * 0.05 * spirit)
+	end
 
 	return spellPower, SpellPower_Schools, damagePower
 end
