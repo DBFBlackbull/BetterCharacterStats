@@ -12,14 +12,6 @@ BCS.PLAYERSTAT_DROPDOWN_OPTIONS = {
 	"PLAYERSTAT_DEFENSES",
 }
 
-BCS.MELEEHIT = {
-	["ROGUE"] = {
-		5, -- pvp
-		8, -- yellow cap
-		24.6, -- white cap
-	},
-}
-
 BCS.SPELLHIT = {
 	-- soon(tm)
 }
@@ -28,6 +20,10 @@ BCS.PaperDollFrame = PaperDollFrame
 
 BCS.Debug = false
 BCS.DebugStack = {}
+
+function BCS:AddDoubleLine(leftText, rightText)
+	GameTooltip:AddDoubleLine(leftText, BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, rightText))
+end
 
 function BCS:DebugTrace(start, limit)
 	BCS.Debug = nil
@@ -78,45 +74,50 @@ function BCS:OnLoad()
 	self.Frame:RegisterEvent("UNIT_INVENTORY_CHANGED") -- fires when equipment changes
 	self.Frame:RegisterEvent("CHARACTER_POINTS_CHANGED") -- fires when learning talent
 	self.Frame:RegisterEvent("PLAYER_AURAS_CHANGED") -- buffs/warrior stances
-	
-	local _, classFileName = UnitClass("Player")
-	self.playerClass = strupper(classFileName)
+	self.Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self.Frame:RegisterEvent("PLAYER_LEVEL_UP")
+
+	local _, unitClass = UnitClass("player")
+	self.player = {
+		name = UnitName("player"),
+		class = unitClass,
+	}
 end
 
 function BCS:OnEvent()
-	--[[if BCS.Debug then
-		local t = {
-			E = event,
-			arg1 = arg1 or "nil",
-			arg2 = arg2 or "nil",
-			arg3 = arg3 or "nil",
-			arg4 = arg4 or "nil",
-			arg5 = arg5 or "nil",
-		}
-		tinsert(BCS.DebugStack, t)
-	end]]
-	
-	if
-		event == "PLAYER_AURAS_CHANGED" or
-		event == "CHARACTER_POINTS_CHANGED"
-	then
+	if event == "PLAYER_AURAS_CHANGED" or event == "CHARACTER_POINTS_CHANGED" then
 		if BCS.PaperDollFrame:IsVisible() then
-			BCS:UpdateStats()
-		else
-			BCS.needUpdate = true
+			return BCS:UpdateStats()
 		end
-	elseif event == "UNIT_INVENTORY_CHANGED" and arg1 == "player" then
+
+		BCS.needUpdate = true
+		return
+	end
+
+	if event == "UNIT_INVENTORY_CHANGED" and arg1 == "player" then
 		if BCS.PaperDollFrame:IsVisible() then
-			BCS:UpdateStats()
-		else
-			BCS.needUpdate = true
+			return BCS:UpdateStats()
 		end
-	elseif event == "ADDON_LOADED" and arg1 == "BetterCharacterStats" then
+
+		BCS.needUpdate = true
+		return
+	end
+
+	if event == "ADDON_LOADED" and arg1 == "BetterCharacterStats" then
 		IndexLeft = BCSConfig["DropdownLeft"] or BCS.PLAYERSTAT_DROPDOWN_OPTIONS[1]
 		IndexRight = BCSConfig["DropdownRight"] or BCS.PLAYERSTAT_DROPDOWN_OPTIONS[2]
 
 		UIDropDownMenu_SetSelectedValue(PlayerStatFrameLeftDropDown, IndexLeft)
 		UIDropDownMenu_SetSelectedValue(PlayerStatFrameRightDropDown, IndexRight)
+		return
+	end
+
+	if event == "PLAYER_ENTERING_WORLD" then
+		BCS.player.level = UnitLevel("player")
+	end
+
+	if event == "PLAYER_LEVEL_UP" then
+		BCS.player.level = arg1
 	end
 end
 
@@ -221,11 +222,10 @@ function BCS:SetArmor(statFrame)
 	PaperDollFormatStat(ARMOR, base, posBuff, negBuff, frame, text)
 	label:SetText(TEXT(ARMOR_COLON))
 	
-	local playerLevel = UnitLevel("player")
-	local armorReduction = effectiveArmor/((85 * playerLevel) + 400)
+	local armorReduction = effectiveArmor/((85 * BCS.player.level) + 400)
 	armorReduction = 100 * (armorReduction/(armorReduction + 1))
 	
-	frame.tooltipSubtext = format(ARMOR_TOOLTIP, playerLevel, armorReduction)
+	frame.tooltipSubtext = format(ARMOR_TOOLTIP, BCS.player.level, armorReduction)
 	
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
@@ -289,7 +289,7 @@ function BCS:SetDamage(statFrame)
 			color = colorNeg
 		end
 		if ( ( displayMin < 100 ) and ( displayMax < 100 ) ) then 
-			damageText:SetText(color..displayMin.." - "..displayMax.."|r")	
+			damageText:SetText(color..displayMin.." - "..displayMax.."|r")
 		else
 			damageText:SetText(color..displayMin.."-"..displayMax.."|r")
 		end
@@ -378,7 +378,7 @@ function BCS:SetAttackPower(statFrame)
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 		GameTooltip:SetText(this.tooltip)
-		GameTooltip:AddLine(this.tooltipSubtext)
+		GameTooltip:AddLine(this.tooltipSubtext, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 		GameTooltip:Show()
 	end)
 	frame:SetScript("OnLeave", function()
@@ -419,58 +419,109 @@ function BCS:SetRating(statFrame, ratingType)
 	local label = getglobal(statFrame:GetName() .. "Label")
 	
 	label:SetText(L.MELEE_HIT_RATING_COLON)
-	
-	local colorPos = "|cff20ff20"
-	local colorNeg = "|cffff2020"
 
-	local playerLevel = UnitLevel("player")
-	if ratingType == "MELEE" or ratingType == "RANGED" then
-		local melee_hit,ranged_hit,hit_debuff = BCS:GetHitRating()
-		local mainHandSkill, offHandSkill, rangedSkill = BCS:GetWeaponSkill()
-		local hitChance = 0
-		local offHandChance
-		local weaponSkill = 0
+	local playerLevel = BCS.player.level
+	if ratingType == "MELEE" then
+		local melee_hit,_,hit_debuff = BCS:GetHitRating()
+		local weaponSkills = BCS:GetWeaponSkills()
 
-		if ratingType == "MELEE" then
-			hitChance = math.max(0, melee_hit - hit_debuff)
-			weaponSkill = mainHandSkill
+		local mainHandModifier = weaponSkills.main_hand.temp+weaponSkills.main_hand.modifier
+		local hitTotal = melee_hit-hit_debuff
+		local hitChanceString = BCS:ModifierColor(mainHandModifier, weaponSkills.main_hand.total)
+		if weaponSkills.off_hand then
+			hitChanceString = hitChanceString .. " / " .. BCS:ModifierColor(weaponSkills.off_hand.temp+weaponSkills.off_hand.modifier, weaponSkills.off_hand.total)
 		end
-
-		if ratingType == "RANGED" then
-			hitChance = math.max(0, ranged_hit - hit_debuff)
-			weaponSkill = rangedSkill
-		end
-
-		local hitChanceString = hitChance .."%"
-		if BCS.MELEEHIT[BCS.playerClass] then
-			if hitChance < BCS.MELEEHIT[BCS.playerClass][1] then
-				hitChanceString = colorNeg .. hitChance .. "|r"
-			elseif hitChance >= BCS.MELEEHIT[BCS.playerClass][2] then
-				hitChanceString = colorPos .. hitChance .. "|r"
-			end
-		end
+		hitChanceString = hitChanceString .. " / " .. BCS:ModifierColor(hit_debuff*-1, hitTotal.."%")
 		text:SetText(hitChanceString)
 
-		local missChance = BCS:GetMissChance(playerLevel*5, weaponSkill)
-		local bossMissChance, hitSuppression = BCS:GetMissChance((playerLevel+3)*5, weaponSkill)
+		local dualWieldPenalty = weaponSkills.off_hand and 19 or 0
 
-		missChance = math.max(0, missChance - hitChance)
-		bossMissChance = math.max(0, bossMissChance - math.max(0, hitChance - hitSuppression))
+		local mainHandMissChance = BCS:GetMissChance(playerLevel * 5, weaponSkills.main_hand.total) + hit_debuff
+		local mainHandBossMissChance, hitSuppression = BCS:GetMissChance((playerLevel + 3) * 5, weaponSkills.main_hand.total)
+		mainHandBossMissChance = mainHandBossMissChance + hit_debuff
 
-		frame.tooltip = format(L.PHYSICAL_HIT_TOOLTIP_HEADER, hitChance)
-		frame.tooltipSubtext = format(L.PHYSICAL_HIT_TOOLTIP, missChance, playerLevel, bossMissChance, hitSuppression)
+		local mainHandAutoMissChance = math.max(0, mainHandMissChance + dualWieldPenalty - melee_hit)
+		local mainHandBossAutoMissChance = math.max(0, mainHandBossMissChance + dualWieldPenalty - math.max(0, melee_hit - hitSuppression))
 
-		if offHandSkill then
-			offHandChance = math.max(0, melee_hit - hit_debuff)
-			local offHandMissChance = BCS:GetMissChance(playerLevel*5, offHandSkill)
-			local bossOffHandMissChance, offHandHitSuppression = BCS:GetMissChance((playerLevel+3)*5, offHandSkill)
+		frame:SetScript("OnEnter", function()
+			GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
+			GameTooltip:SetText(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Main Hand"))
+			BCS:AddDoubleLine(format("Weapon skill (%s):", weaponSkills.main_hand.type), BCS:ModifierText(mainHandModifier, weaponSkills.main_hand.skill, weaponSkills.main_hand.total))
+			BCS:AddDoubleLine("Hit Chance:", BCS:ModifierTextPercent(hit_debuff*-1, melee_hit, hitTotal))
+			BCS:AddDoubleLine("Hit Suppression (vs Boss):", hitSuppression.."%")
+			if weaponSkills.off_hand then
+				local mainHandAbilityMissChance = math.max(0, mainHandMissChance - melee_hit)
+				local mainHandBossAbilityMissChance = math.max(0, mainHandBossMissChance - math.max(0, melee_hit - hitSuppression))
 
-			offHandMissChance = math.max(0, offHandMissChance - offHandChance) + 19
-			bossOffHandMissChance = math.max(0, bossMissChance - math.max(0, offHandChance -hitSuppression)) + 19
+				GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Yellow Attacks"))
+				BCS:AddDoubleLine("Miss Chance (vs Boss):", mainHandBossAbilityMissChance.."%")
+				BCS:AddDoubleLine(format("Miss Chance (vs level %d):", playerLevel), mainHandAbilityMissChance.."%")
+				GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Auto attacks"))
+			end
 
-			frame.tooltipSubtext = format(L.DUAL_WIELD_HIT_TOOLTIP, missChance, playerLevel, offHandMissChance, playerLevel, bossMissChance, bossOffHandMissChance, hitSuppression, offHandHitSuppression)
+			BCS:AddDoubleLine("Miss Chance (vs Boss):", mainHandBossAutoMissChance.."%")
+			BCS:AddDoubleLine(format("Miss Chance (vs level %d):", playerLevel), mainHandAutoMissChance.."%")
+
+			if weaponSkills.off_hand then
+				local offHandModifier = weaponSkills.off_hand.temp+weaponSkills.off_hand.modifier
+				local offHandMissChance = BCS:GetMissChance(playerLevel * 5, weaponSkills.off_hand.total) + hit_debuff + dualWieldPenalty
+				local offHandBossMissChance, hitSuppression = BCS:GetMissChance((playerLevel + 3) * 5, weaponSkills.off_hand.total)
+				offHandBossMissChance = offHandBossMissChance + hit_debuff + dualWieldPenalty
+
+				offHandMissChance = math.max(0, offHandMissChance - melee_hit)
+				offHandBossMissChance = math.max(0, offHandBossMissChance - math.max(0, melee_hit - hitSuppression))
+
+				GameTooltip:AddLine(" ")
+				GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Off Hand"))
+				BCS:AddDoubleLine(format("Weapon skill (%s):", weaponSkills.off_hand.type), BCS:ModifierText(offHandModifier, weaponSkills.off_hand.skill, weaponSkills.off_hand.total))
+				BCS:AddDoubleLine("Hit Chance:", BCS:ModifierTextPercent(hit_debuff*-1, melee_hit, hitTotal))
+				BCS:AddDoubleLine("Hit Suppression (vs Boss):", hitSuppression.."%")
+				BCS:AddDoubleLine("Miss Chance (vs Boss):", offHandBossMissChance.."%")
+				BCS:AddDoubleLine(format("Miss Chance (vs level %d):", playerLevel), offHandMissChance.."%")
+			end
+			GameTooltip:Show()
+		end)
+		frame:SetScript("OnLeave", function()
+			GameTooltip:Hide()
+		end)
+		return
+	end
+
+	if ratingType == "RANGED" then
+		local _,ranged_hit,hit_debuff = BCS:GetHitRating()
+		local weaponSkills = BCS:GetWeaponSkills()
+		if not weaponSkills.ranged then
+			text:SetText(NOT_APPLICABLE)
+			return
 		end
-	elseif ratingType == "SPELL" then
+
+		local rangedModifier = weaponSkills.ranged.temp+weaponSkills.ranged.modifier
+		local hitTotal = ranged_hit-hit_debuff
+		local hitChanceString = format("%s / %s", BCS:ModifierColor(rangedModifier, weaponSkills.ranged.total), BCS:ModifierColor(hit_debuff*-1, hitTotal.."%"))
+		text:SetText(hitChanceString)
+
+		local rangedMissChance = BCS:GetMissChance(playerLevel*5, weaponSkills.ranged.total)+hit_debuff
+		local rangedBossMissChance, hitSuppression = BCS:GetMissChance((playerLevel+3)*5, weaponSkills.ranged.total)
+		rangedBossMissChance = rangedBossMissChance + hit_debuff
+
+		rangedMissChance = math.max(0, rangedMissChance - ranged_hit)
+		rangedBossMissChance = math.max(0, rangedBossMissChance - math.max(0, ranged_hit - hitSuppression))
+
+		frame:SetScript("OnEnter", function()
+			GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
+			GameTooltip:SetText(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Ranged"))
+			BCS:AddDoubleLine(format("Weapon skill (%s):", weaponSkills.ranged.type), BCS:ModifierText(rangedModifier, weaponSkills.ranged.skill, weaponSkills.ranged.total))
+			BCS:AddDoubleLine("Hit Chance:", BCS:ModifierTextPercent(hit_debuff*-1, ranged_hit, hitTotalString))
+			BCS:AddDoubleLine("Hit Suppression (vs Boss):", hitSuppression.."%")
+			BCS:AddDoubleLine("Miss Chance (vs Boss):", rangedBossMissChance.."%")
+			BCS:AddDoubleLine(format("Miss Chance (vs level %d):", playerLevel), rangedMissChance.."%")
+			GameTooltip:Show()
+		end)
+		frame:SetScript("OnLeave", function()
+			GameTooltip:Hide()
+		end)
+	end
+	if ratingType == "SPELL" then
 		local spell_hit, spell_hit_fire, spell_hit_frost, spell_hit_arcane, spell_hit_shadow = BCS:GetSpellHitRating()
 		--[[if BCS.SPELLHIT[BCS.playerClass] then
 			if spell_hit < BCS.SPELLHIT[BCS.playerClass][1] then
@@ -516,23 +567,22 @@ function BCS:SetRating(statFrame, ratingType)
 		end
 		
 		-- class specific tooltip
-		if L[BCS.playerClass .. "_SPELL_HIT_TOOLTIP"] then
-			frame.tooltipSubtext = L[BCS.playerClass .. "_SPELL_HIT_TOOLTIP"]
+		--if L[BCS.player.class .. "_SPELL_HIT_TOOLTIP"] then
+		--	frame.tooltipSubtext = L[BCS.playerClass .. "_SPELL_HIT_TOOLTIP"]
+		--end
+
+		if frame.tooltip then
+			frame:SetScript("OnEnter", function()
+				GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
+				GameTooltip:SetText(this.tooltip)
+				GameTooltip:AddLine(this.tooltipSubtext, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
+				GameTooltip:Show()
+			end)
+			frame:SetScript("OnLeave", function()
+				GameTooltip:Hide()
+			end)
 		end
 	end
-	
-	if frame.tooltip then
-		frame:SetScript("OnEnter", function()
-			GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-			GameTooltip:SetText(this.tooltip)
-			GameTooltip:AddLine(this.tooltipSubtext, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
-			GameTooltip:Show()
-		end)
-		frame:SetScript("OnLeave", function()
-			GameTooltip:Hide()
-		end)
-	end
-	
 end
 
 function BCS:SetMeleeCritChance(statFrame)
@@ -549,26 +599,39 @@ function BCS:SetGlancingBlow(statFrame)
 	local text = getglobal(statFrame:GetName() .. "StatText")
 	local label = getglobal(statFrame:GetName() .. "Label")
 
-	local playerLevel = UnitLevel("player")
-	local targetDefense = (playerLevel+3)*5
+	local targetDefense = (BCS.player.level+3)*5
 
-	local mainHandSkill, offHandSkill = BCS:GetWeaponSkill()
-	local mainHandGlanceChance, mainHandGlancePen = BCS:GetGlancingBlow(targetDefense, mainHandSkill, playerLevel)
+	local weaponSkills = BCS:GetWeaponSkills()
+	local mainHandGlanceChance, mainHandGlancePen = BCS:GetGlancingBlow(targetDefense, weaponSkills.main_hand.total, BCS.player.level)
+	local colonValue = format("%d%%", mainHandGlancePen)
 
-	--if offHandSkill then
-	--	offHandGlanceChance, offHandGlancePen = BCS:GetGlancingBlow(targetDefense, offHandSkill, playerLevel)
-	--end
+	local offHandGlanceChance, offHandGlancePen
+	if weaponSkills.off_hand then
+		offHandGlanceChance, offHandGlancePen = BCS:GetGlancingBlow(targetDefense, weaponSkills.off_hand.total, BCS.player.level)
+		colonValue = format("%s / %d%%", colonValue, offHandGlancePen)
+	end
 
 	label:SetText(L.MELEE_GLANCING_BLOW_COLON)
-	text:SetText(format("%.1f%%", mainHandGlancePen))
-
-	frame.tooltip = format(L.GLANCING_BLOW_TOOLTIP_HEADER, mainHandGlancePen)
-	frame.tooltipSubtext = format(L.GLANCING_BLOW_TOOLTIP, mainHandGlanceChance, mainHandGlancePen)
+	text:SetText(colonValue)
 
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
-		GameTooltip:SetText(this.tooltip)
-		GameTooltip:AddLine(this.tooltipSubtext)
+		GameTooltip:SetText(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, L.GLANCING_BLOW_TOOLTIP_HEADER))
+		GameTooltip:AddLine(L.GLANCING_BLOW_TOOLTIP, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Main Hand"))
+		local mainHandModifier = weaponSkills.main_hand.modifier+weaponSkills.main_hand.temp
+		BCS:AddDoubleLine(format("Weapon skill (%s):", weaponSkills.main_hand.type), BCS:ModifierText(mainHandModifier, weaponSkills.main_hand.skill, weaponSkills.main_hand.total))
+		BCS:AddDoubleLine("Glancing Blow Chance (vs Boss):", format("%.1f%%",mainHandGlanceChance))
+		BCS:AddDoubleLine("Glancing Blow Penalty (vs Boss):", format("%.1f%%",mainHandGlancePen))
+		if weaponSkills.off_hand then
+			GameTooltip:AddLine(" ")
+			GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Off Hand"))
+			local offHandModifier = weaponSkills.off_hand.modifier+weaponSkills.off_hand.temp
+			BCS:AddDoubleLine(format("Weapon skill (%s):", weaponSkills.off_hand.type), BCS:ModifierText(offHandModifier, weaponSkills.off_hand.skill, weaponSkills.off_hand.total))
+			BCS:AddDoubleLine("Glancing Blow Chance (vs Boss):", format("%.1f%%",offHandGlanceChance))
+			BCS:AddDoubleLine("Glancing Blow Penalty (vs Boss):", format("%.1f%%",offHandGlancePen))
+		end
 		GameTooltip:Show()
 	end)
 	frame:SetScript("OnLeave", function()
@@ -853,7 +916,7 @@ function BCS:SetRangedAttackPower(statFrame)
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 		GameTooltip:SetText(this.tooltip)
-		GameTooltip:AddLine(this.tooltipSubtext)
+		GameTooltip:AddLine(this.tooltipSubtext, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1)
 		GameTooltip:Show()
 	end)
 	frame:SetScript("OnLeave", function()
