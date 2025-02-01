@@ -777,8 +777,8 @@ function BCS:GetSpellPower()
 		end
 	end
 
-	-- Very Berry Cream
 	BCS:IterateAuras(nil, function(lineText)
+		-- Very Berry Cream
 		local _, _, spellPowerFromAura = strfind(lineText, L["Magical damage dealt is increased by up to (%d+)."])
 		if spellPowerFromAura then
 			spellPower = spellPower + tonumber(spellPowerFromAura)
