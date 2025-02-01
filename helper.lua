@@ -758,85 +758,39 @@ function BCS:GetHealingPower()
 	return healPower
 end
 
---[[
--- server\src\game\Object\Player.cpp
-float Player::OCTRegenMPPerSpirit()
-{
-    float addvalue = 0.0;
+function BCS:GetRegenMPPerSpirit()
+	local _, spirit = UnitStat("player", 5)
 
-    float Spirit = GetStat(STAT_SPIRIT);
-    uint8 Class = getClass();
-
-    switch (Class)
-    {
-        case CLASS_DRUID:   addvalue = (Spirit / 5 + 15);   break;
-        case CLASS_HUNTER:  addvalue = (Spirit / 5 + 15);   break;
-        case CLASS_MAGE:    addvalue = (Spirit / 4 + 12.5); break;
-        case CLASS_PALADIN: addvalue = (Spirit / 5 + 15);   break;
-        case CLASS_PRIEST:  addvalue = (Spirit / 4 + 12.5); break;
-        case CLASS_SHAMAN:  addvalue = (Spirit / 5 + 17);   break;
-        case CLASS_WARLOCK: addvalue = (Spirit / 5 + 15);   break;
-    }
-
-    addvalue /= 2.0f;   // the above addvalue are given per tick which occurs every 2 seconds, hence this divide by 2
-
-    return addvalue;
-}
-
-void Player::UpdateManaRegen()
-{
-    // Mana regen from spirit
-    float power_regen = OCTRegenMPPerSpirit();
-    // Apply PCT bonus from SPELL_AURA_MOD_POWER_REGEN_PERCENT aura on spirit base regen
-    power_regen *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
-
-    // Mana regen from SPELL_AURA_MOD_POWER_REGEN aura
-    float power_regen_mp5 = GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f;
-
-    // Set regen rate in cast state apply only on spirit based regen
-    int32 modManaRegenInterrupt = GetTotalAuraModifier(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT);
-    if (modManaRegenInterrupt > 100)
-        { modManaRegenInterrupt = 100; }
-
-    m_modManaRegenInterrupt = power_regen_mp5 + power_regen * modManaRegenInterrupt / 100.0f;
-
-    m_modManaRegen = power_regen_mp5 + power_regen;
-}
-]]
-
-local function GetRegenMPPerSpirit()
-	local addvalue = 0
-
-	local stat, Spirit, posBuff, negBuff = UnitStat("player", 5)
-	local lClass, class = UnitClass("player")
-
-	if class == "DRUID" then
-		addvalue = (Spirit / 5 + 15)
-	elseif class == "HUNTER" then
-		addvalue = (Spirit / 5 + 15)
-	elseif class == "MAGE" then
-		addvalue = (Spirit / 4 + 12.5)
-	elseif class == "PALADIN" then
-		addvalue = (Spirit / 5 + 15)
-	elseif class == "PRIEST" then
-		addvalue = (Spirit / 4 + 12.5)
-	elseif class == "SHAMAN" then
-		addvalue = (Spirit / 5 + 17)
-	elseif class == "WARLOCK" then
-		addvalue = (Spirit / 5 + 15)
-	else
-		return addvalue
+	if BCS.player.class == "DRUID" then
+		return spirit / 5 + 15
 	end
-	return addvalue
+	if BCS.player.class == "HUNTER" then
+		return spirit / 5 + 15
+	end
+	if BCS.player.class == "MAGE" then
+		return spirit / 4 + 12.5
+	end
+	if BCS.player.class == "PALADIN" then
+		return spirit / 5 + 15
+	end
+	if BCS.player.class == "PRIEST" then
+		return spirit / 4 + 12.5
+	end
+	if BCS.player.class == "SHAMAN" then
+		return spirit / 5 + 17
+	end
+	if BCS.player.class == "WARLOCK" then
+		return spirit / 5 + 15
+	end
+
+	return 0
 end
 
 function BCS:GetManaRegen()
-	-- to-maybe-do: apply buffs/talents
-	local base, casting
-	local power_regen = GetRegenMPPerSpirit()
+	local power_regen = BCS:GetRegenMPPerSpirit()
 
-	casting = power_regen / 100
-	base = power_regen
+	local base = power_regen
+	local casting = power_regen / 100
 
 	local mp5 = 0;
 
@@ -854,12 +808,23 @@ function BCS:GetManaRegen()
 			mp5 = mp5 + tonumber(value)
 		end
 	end)
-	
-	-- buffs
-	local _, _, mp5FromAura = BCS:GetPlayerAura(L["Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds."])
-	if mp5FromAura then
-		mp5 = mp5 + 10
-	end
+
+	BCS:IterateAuras(AURA_BUFF, function(lineText)
+		local _, _, mp5FromAura = strfind(lineText, L["Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds."])
+		if mp5FromAura then
+			mp5 = mp5 + 10
+		end
+
+		_, _, mp5FromAura = strfind(lineText, L["Restores (%d) mana every 5 seconds."])
+		if mp5FromAura then
+			mp5 = mp5 + tonumber(mp5FromAura)
+		end
+
+		local _, _, mp2FromAura = strfind(lineText, L["Gain (%d) mana every 2 seconds."])
+		if mp2FromAura then
+			mp5 = mp5 + tonumber(mp2FromAura) * 2.5
+		end
+	end)
 
 	return base, casting, mp5
 end

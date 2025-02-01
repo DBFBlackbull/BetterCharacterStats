@@ -68,13 +68,15 @@ BCS["L"] = {
 	["Nature damage dealt by spells and abilities is increased by up to (%d+)."] = 					"Nature damage dealt by spells and abilities is increased by up to (%d+).",
 	["Shadow damage dealt by spells and abilities is increased by up to (%d+)."] = 					"Shadow damage dealt by spells and abilities is increased by up to (%d+).", -- Shadow power elixir
 	["Healing done by magical spells is increased by up to (%d+)."] = 								"Healing done by magical spells is increased by up to (%d+).",
-
 	["Increases frost damage done by (%d+)"] = "Increases frost damage done by (%d+)", -- Blessing of Blackfathom
 
 	["Chance to hit increased by (%d)%%."] = 														"Chance to hit increased by (%d)%%.",
 	["Chance to hit reduced by (%d+)%%."] = 														"Chance to hit reduced by (%d+)%%.",
 	["Chance to hit decreased by (%d+)%% and %d+ Nature damage every %d+ sec."] = 					"Chance to hit decreased by (%d+)%% and %d+ Nature damage every %d+ sec.",
 	["Lowered chance to hit."] = 																	"Lowered chance to hit.", -- 5917	Fumble (25%)
+	["Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds."] = 	"Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds.",
+	["Gain (%d) mana every 2 seconds."] = 															"Gain (%d) mana every 2 seconds.", -- Mana spring totem
+	["Restores (%d) mana every 5 seconds."] = 														"Restores (%d) mana every 5 seconds.", -- Blessing of Wisdom
 	["Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds."] = 	"Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds.",
 	["Improves your chance to hit by (%d+)%%."] = 													"Improves your chance to hit by (%d+)%%.",
 	["Chance for a critical hit with a spell increased by (%d+)%%."] = 								"Chance for a critical hit with a spell increased by (%d+)%%.",
