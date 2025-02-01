@@ -216,34 +216,26 @@ function BCS:GetItemIDFromLink(itemLink)
 	return tonumber(itemID)
 end
 
+function BCS:GetWeaponSkillNameForSlot(slotId)
+	local itemLink = GetInventoryItemLink("player", slotId)
+	if not itemLink then
+		return
+	end
+
+	local itemID = BCS:GetItemIDFromLink(itemLink)
+	local _, _, _, _, _, weaponType = GetItemInfo(itemID)
+	weaponType = string.gsub(weaponType, "^One%-Handed%s*", "")
+	if weaponType == "Fist Weapons" then
+		weaponType = "Unarmed"
+	end
+
+	return weaponType
+end
+
 function BCS:GetWeaponSkills()
-	local main_hand_type
-	local off_hand_type
-	local ranged_type
-
-	local mainHandLink = GetInventoryItemLink("player", 16)
-	if mainHandLink then
-		local itemID = BCS:GetItemIDFromLink(mainHandLink)
-		_, _, _, _, _, main_hand_type, subtype = GetItemInfo(itemID)
-		main_hand_type = string.gsub(main_hand_type, "^One%-Handed%s*", "")
-	end
-
-	if not main_hand_type then
-		main_hand_type = "Unarmed"
-	end
-
-	local offHandLink = GetInventoryItemLink("player", 17)
-	if offHandLink then
-		local itemID = BCS:GetItemIDFromLink(offHandLink)
-		_, _, _, _, _, off_hand_type = GetItemInfo(itemID)
-		off_hand_type = string.gsub(off_hand_type, "^One%-Handed%s*", "")
-	end
-
-	local rangedLink = GetInventoryItemLink("player", 18)
-	if rangedLink then
-		local itemID = BCS:GetItemIDFromLink(rangedLink)
-		_, _, _, _, _, ranged_type = GetItemInfo(itemID)
-	end
+	local main_hand_type = BCS:GetWeaponSkillNameForSlot(16)
+	local off_hand_type = BCS:GetWeaponSkillNameForSlot(17)
+	local ranged_type = BCS:GetWeaponSkillNameForSlot(18)
 
 	local table = {}
 	local MAX_SKILLS = GetNumSkillLines()
@@ -596,7 +588,7 @@ function BCS:GetSpellCritChance()
 	end)
 
 	BCS:IterateAuras(AURA_DEBUFF, function(lineText)
-		local _, _, _, critFromAura = strfind(lineText, L["Melee critical-hit chance reduced by (%d+)%%.\r\nSpell critical-hit chance reduced by (%d+)%%."], 'HARMFUL')
+		local _, _, _, critFromAura = strfind(lineText, L["Melee critical-hit chance reduced by (%d+)%%.\r\nSpell critical-hit chance reduced by (%d+)%%."])
 		if critFromAura then
 			spellCrit = spellCrit - tonumber(critFromAura)
 		end
@@ -810,17 +802,17 @@ function BCS:GetManaRegen()
 	end)
 
 	BCS:IterateAuras(AURA_BUFF, function(lineText)
-		local _, _, mp5FromAura = strfind(lineText, L["Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds."])
-		if mp5FromAura then
+		local found = strfind(lineText, L["Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds."])
+		if found then
 			mp5 = mp5 + 10
 		end
 
-		_, _, mp5FromAura = strfind(lineText, L["Restores (%d) mana every 5 seconds."])
+		local _, _, mp5FromAura = strfind(lineText, L["Restores (%d+) mana every 5 seconds."])
 		if mp5FromAura then
 			mp5 = mp5 + tonumber(mp5FromAura)
 		end
 
-		local _, _, mp2FromAura = strfind(lineText, L["Gain (%d) mana every 2 seconds."])
+		local _, _, mp2FromAura = strfind(lineText, L["Gain (%d+) mana every 2 seconds."])
 		if mp2FromAura then
 			mp5 = mp5 + tonumber(mp2FromAura) * 2.5
 		end
@@ -858,7 +850,7 @@ function BCS:IterateAuras(buffFilter, callbackFunc)
 
 	for i=0, 200 do
 		local index = GetPlayerBuff(i, buffFilter)
-		if index == 0 then -- test if this is correct
+		if index < 0 then
 			return
 		end
 
