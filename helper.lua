@@ -394,10 +394,6 @@ function BCS:GetCritChance()
 	if BCS.player.class == 'HUNTER' then
 		local _, _, _, _, rank = GetTalentInfo(2, 4) -- Marksmanship, Lethal Shots
 		ranged_crit = ranged_crit + rank
-
-		local _, _, _, _, rank = GetTalentInfo(3, 13) -- Survival, Killer Instinct
-		melee_crit = melee_crit + rank
-		ranged_crit = ranged_crit + rank
 	end
 
 	return melee_crit, ranged_crit
