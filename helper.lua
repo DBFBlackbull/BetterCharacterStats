@@ -9,7 +9,6 @@ local L = BCS["L"]
 local strfind = strfind
 local tonumber = tonumber
 local tinsert = tinsert
-local MAX_INVENTORY_SLOTS = 19
 local AURA_BUFF = "HELPFUL"
 local AURA_DEBUFF = "HARMFUL"
 
@@ -180,106 +179,25 @@ function BCS:GetHitRating()
 		end
 	end)
 
-	local MAX_TABS = GetNumTalentTabs()
-	-- speedup
-	if Cache_GetHitRating_Tab and Cache_GetHitRating_Talent then
-		BCS_Tooltip:SetTalent(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
-		local MAX_LINES = BCS_Tooltip:NumLines()
-
-		for line = 1, MAX_LINES do
-			local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
-			if left:GetText() then
-				-- Rogues, Paladins
-				-- Precision
-				local _, _, value = strfind(left:GetText(), L["Increases your chance to hit with melee weapons by (%d)%%."])
-				local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
-				if value and rank > 0 then
-					melee_hit = melee_hit + tonumber(value)
-					line = MAX_LINES
-				end
-
-				-- Shamans
-				-- Nature's Guidance
-				local _, _, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
-				local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
-				if value and rank > 0 then
-					melee_hit = melee_hit + tonumber(value)
-					line = MAX_LINES
-				end
-
-				-- Hunters
-				-- Surefooted
-				local _, _, value = strfind(left:GetText(), L["Increases hit chance by (%d)%% and increases the chance movement impairing effects will be resisted by an additional %d+%%."])
-				local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(Cache_GetHitRating_Tab, Cache_GetHitRating_Talent)
-				if value and rank > 0 then
-					melee_hit = melee_hit + tonumber(value)
-					ranged_hit = ranged_hit + tonumber(value)
-					line = MAX_LINES
-				end
-			end
-		end
-
-		return melee_hit, ranged_hit, hit_debuff
+	if BCS.player.class == "HUNTER" then
+		local _, _, _, _, rank = GetTalentInfo(3, 11) -- Survival, Surefooted
+		melee_hit = melee_hit + rank
+		ranged_hit = ranged_hit + rank
 	end
 
-	for tab = 1, MAX_TABS do
-		local MAX_TALENTS = GetNumTalents(tab)
+	if BCS.player.class == "ROGUE" then
+		local _, _, _, _, rank = GetTalentInfo(2, 6) -- Combat, Precision
+		melee_hit = melee_hit + rank
+	end
 
-		for talent = 1, MAX_TALENTS do
-			BCS_Tooltip:SetTalent(tab, talent);
-			local MAX_LINES = BCS_Tooltip:NumLines()
+	if BCS.player.class == "PALADIN" then
+		local _, _, _, _, rank = GetTalentInfo(2, 3) -- Protection, Precision
+		melee_hit = melee_hit + rank
+	end
 
-			for line = 1, MAX_LINES do
-				local left = getglobal(BCS_Prefix .. "TextLeft" .. line)
-				if left:GetText() then
-					-- Rogues, Paladins
-					-- Precision
-					local _, _, value = strfind(left:GetText(), L["Increases your chance to hit with melee weapons by (%d)%%."])
-					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
-					if value and rank > 0 then
-						melee_hit = melee_hit + tonumber(value)
-
-						Cache_GetHitRating_Tab = tab
-						Cache_GetHitRating_Talent = talent
-
-						line = MAX_LINES
-						talent = MAX_TALENTS
-						tab = MAX_TABS
-					end
-
-					-- Shamans
-					-- Nature's Guidance
-					local _, _, value = strfind(left:GetText(), L["Increases your chance to hit with melee attacks and spells by (%d)%%."])
-					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
-					if value and rank > 0 then
-						melee_hit = melee_hit + tonumber(value)
-
-						Cache_GetHitRating_Tab = tab
-						Cache_GetHitRating_Talent = talent
-
-						line = MAX_LINES
-						talent = MAX_TALENTS
-						tab = MAX_TABS
-					end
-
-					-- Hunters
-					-- Surefooted
-					local _, _, value = strfind(left:GetText(), L["Increases hit chance by (%d)%% and increases the chance movement impairing effects will be resisted by an additional %d+%%."])
-					local name, iconTexture, tier, column, rank, maxRank, isExceptional, meetsPrereq = GetTalentInfo(tab, talent)
-					if value and rank > 0 then
-						melee_hit = melee_hit + tonumber(value)
-						ranged_hit = ranged_hit + tonumber(value)
-
-						Cache_GetHitRating_Tab = tab
-						Cache_GetHitRating_Talent = talent
-
-						line = MAX_LINES
-						talent = MAX_TALENTS
-						tab = MAX_TABS
-					end
-				end
-			end
-		end
+	if BCS.player.class == "SHAMAN" then
+		local _, _, _, _, rank = GetTalentInfo(3, 6) -- Restoration, Nature's Guidance
+		melee_hit = melee_hit + rank
 	end
 
 	return melee_hit, ranged_hit, hit_debuff
