@@ -233,6 +233,10 @@ end
 
 function BCS:GetWeaponSkills()
 	local main_hand_type = BCS:GetWeaponSkillNameForSlot(16)
+	if not main_hand_type then
+		main_hand_type = "Unarmed"
+	end
+
 	local off_hand_type = BCS:GetWeaponSkillNameForSlot(17)
 	local ranged_type = BCS:GetWeaponSkillNameForSlot(18)
 
