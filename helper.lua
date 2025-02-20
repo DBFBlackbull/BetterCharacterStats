@@ -142,6 +142,7 @@ function BCS:GetHitRating()
 	end)
 
 	BCS:IterateAuras(AURA_BUFF, function(lineText)
+		-- Dark Desire
 		local _, _, hitFromAura = strfind(lineText, L["Chance to hit increased by (%d)%%."])
 		if hitFromAura then
 			melee_hit = melee_hit + tonumber(hitFromAura)
@@ -624,7 +625,7 @@ function BCS:GetHealingPower()
 		end
 	end)
 
-	-- buffs
+	-- Sweet Surprise
 	local _, _, healPowerFromAura = BCS:GetPlayerAura(L["Healing done by magical spells is increased by up to (%d+)."])
 	if healPowerFromAura then
 		healPower = healPower + tonumber(healPowerFromAura)
