@@ -228,6 +228,9 @@ function BCS:GetWeaponSkillNameForSlot(slotId)
 	if weaponType == "Fist Weapons" then
 		weaponType = "Unarmed"
 	end
+	if weaponType == "Fishing Pole" then
+		weaponType = "Fishing"
+	end
 
 	return weaponType
 end
