@@ -571,16 +571,15 @@ function BCS:SetMeleeCritChance(statFrame)
 	local melee_crit = BCS:GetCritChance()
 	text:SetText(format("%.2f%%", melee_crit))
 
-	local playerLevel = BCS.player.level
-
 	local weaponSkills = BCS:GetWeaponSkills()
+	local hitRatings = BCS:GetHitRatings()
 	local mainHandBossCritSuppression = BCS:GetCritSuppression((playerLevel + 3) * 5, weaponSkills.main_hand.total, playerLevel)
 	local mainHandBossCritChance = melee_crit - mainHandBossCritSuppression
 
-	BCS:GetMissChance()
-	BCS:GetTargetDodgeChance()
-	BCS:GetTargetBlockChance()
-	BCS:GEtTargetParryChance()
+	local missChanges = BCS:GetMissChances(weaponSkills, hitRatings)
+	local targetDodgeChanges = BCS:GetTargetDodgeChances(weaponSkills)
+	local targetBlockChanges = BCS:GetTargetBlockChances(weaponSkills)
+	local targetParryChanges = BCS:GEtTargetParryChances(weaponSkills)
 
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")

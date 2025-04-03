@@ -452,7 +452,7 @@ function BCS:GetCritChance()
 	return melee_crit, ranged_crit
 end
 
-function BCS:GetCritSuppression(targetDefense, attackerSkill, attackerLevel)
+local function getCritSuppression(targetDefense, attackerSkill, attackerLevel)
 	local baseSkill = math.min(attackerLevel * 5, attackerSkill)
 	local diffSkill = baseSkill - targetDefense
 
@@ -472,15 +472,57 @@ function BCS:GetCritSuppression(targetDefense, attackerSkill, attackerLevel)
 	return critSuppression * -1
 end
 
-function BCS:GetTargetDodgeChance(targetDefense, attackerSkill)
+function BCS:GetCritSuppressions(weaponSkills)
+	local table = {}
+	table.main_hand = {
+
+	}
+end
+
+local function getTargetDodgeChance(targetDefense, attackerSkill)
 	return 5 + (targetDefense - attackerSkill) * 0.1
 end
 
-function BCS:GetTargetBlockChance(targetDefense, attackerSkill)
+function BCS:GetTargetDodgeChances(weaponSkills)
+	local table = {}
+	table.main_hand = {
+		level = getTargetDodgeChance(BCS.player.level * 5, weaponSkills.main_hand.total),
+		boss  = getTargetDodgeChance((BCS.player.level + 3) * 5, weaponSkills.main_hand.total),
+	}
+
+	if weaponSkills.off_hand then
+		table.off_hand = {
+			level = getTargetDodgeChance(BCS.player.level * 5, weaponSkills.off_hand.total),
+			boss  = getTargetDodgeChance((BCS.player.level + 3) * 5, weaponSkills.off_hand.total),
+		}
+	end
+
+	return table
+end
+
+local function getTargetBlockChance(targetDefense, attackerSkill)
 	return math.min(5, 5 + (targetDefense - attackerSkill) * 0.1)
 end
 
-function BCS:GEtTargetParryChance(targetDefense, attackerSkill)
+function BCS:GetTargetBlockChances(weaponSkills)
+	local table = {}
+	table.main_hand = {
+		level = getTargetBlockChance(BCS.player.level * 5, weaponSkills.main_hand.total),
+		boss  = getTargetBlockChance((BCS.player.level + 3) * 5, weaponSkills.main_hand.total),
+	}
+
+	if weaponSkills.off_hand then
+		table.off_hand = {
+			level = getTargetBlockChance(BCS.player.level * 5, weaponSkills.off_hand.total),
+			boss  = getTargetBlockChance((BCS.player.level + 3) * 5, weaponSkills.off_hand.total),
+		}
+	end
+
+	return table
+end
+
+
+local function getTargetParryChance(targetDefense, attackerSkill)
 	local diffSkill = targetDefense - attackerSkill
 	local parry = diffSkill * 0.1
 
@@ -489,6 +531,23 @@ function BCS:GEtTargetParryChance(targetDefense, attackerSkill)
 	end
 
 	return parry
+end
+
+function BCS:GetTargetParryChanges(weaponSkills)
+	local table = {}
+	table.main_hand = {
+		level = getTargetParryChance(BCS.player.level * 5, weaponSkills.main_hand.total),
+		boss  = getTargetParryChance((BCS.player.level + 3) * 5, weaponSkills.main_hand.total),
+	}
+
+	if weaponSkills.off_hand then
+		table.off_hand = {
+			level = getTargetParryChance(BCS.player.level * 5, weaponSkills.off_hand.total),
+			boss  = getTargetParryChance((BCS.player.level + 3) * 5, weaponSkills.off_hand.total),
+		}
+	end
+
+	return table
 end
 
 function BCS:GetSpellCritChance()
