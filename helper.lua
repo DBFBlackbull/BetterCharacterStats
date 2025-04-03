@@ -103,7 +103,7 @@ function BCS:GetPlayerAura(searchText, auraType)
 	end
 end
 
-function BCS:GetHitRating()
+function BCS:GetHitRatings()
 	local melee_hit = 0
 	local ranged_hit = 0
 	local hit_debuff = 0;
@@ -200,7 +200,11 @@ function BCS:GetHitRating()
 		melee_hit = melee_hit + rank
 	end
 
-	return melee_hit, ranged_hit, hit_debuff
+	return {
+		melee = melee_hit,
+		ranged = ranged_hit,
+		debuff = hit_debuff
+	}
 end
 
 function BCS:GetItemIDFromLink(itemLink)
@@ -297,7 +301,7 @@ function BCS:GetGlancingBlow(targetDefense, attackerSkill, attackerLevel)
 	return glanceChance, glancePenalty
 end
 
-function BCS:GetMissChance(targetDefense, attackerSkill)
+local function getMissChance(targetDefense, attackerSkill)
 	local targetMiss = 0
 	local hitSuppression = 0
 
@@ -312,6 +316,47 @@ function BCS:GetMissChance(targetDefense, attackerSkill)
 	end
 
 	return targetMiss, hitSuppression
+end
+
+function BCS:GetMissChances(weaponSkills, hitRatings)
+	local table = {}
+
+	local dualWieldPenalty = weaponSkills.off_hand and 19 or 0
+
+	local mainHandMiss = getMissChance(BCS.player.level * 5, weaponSkills.main_hand.total)
+	local mainHandBossMiss, mainHandSuppression = getMissChance((BCS.player.level + 3) * 5, weaponSkills.main_hand.total)
+
+	table.main_hand = {
+		yellowVsLevel = math.max(0, mainHandMiss     + hitRatings.debuff - hitRatings.melee),
+		yellowVsBoss  = math.max(0, mainHandBossMiss + hitRatings.debuff - math.max(0, hitRatings.melee - mainHandSuppression)),
+		autoVsLevel   = math.max(0, mainHandMiss     + hitRatings.debuff + dualWieldPenalty - hitRatings.melee),
+		autoVsBoss    = math.max(0, mainHandBossMiss + hitRatings.debuff + dualWieldPenalty - math.max(0, hitRatings.melee - mainHandSuppression)),
+		bossSuppression = mainHandSuppression,
+	}
+
+	if weaponSkills.off_hand then
+		local offhandMiss = getMissChance(BCS.player.level * 5, weaponSkills.off_hand.total)
+		local offHandBossMiss, offHandSuppression = getMissChance((BCS.player.level + 3) * 5, weaponSkills.off_hand.total)
+
+		table.off_hand = {
+			autoVsLevel = math.max(0, offhandMiss     + hitRatings.debuff + dualWieldPenalty - hitRatings.melee),
+			autoVsBoss  = math.max(0, offHandBossMiss + hitRatings.debuff + dualWieldPenalty - math.max(0, hitRatings.melee - offHandSuppression)),
+			bossSuppression = offHandSuppression,
+		}
+	end
+
+	if weaponSkills.ranged then
+		local rangedMiss = getMissChance(BCS.player.level * 5, weaponSkills.ranged.total)
+		local rangedBossMiss, rangedSuppression = getMissChance((BCS.player.level + 3) * 5, weaponSkills.ranged.total)
+
+		table.ranged = {
+			yellowVsLevel = rangedMiss     + hitRatings.debuff - hitRatings.ranged,
+			yellowVsBoss  = rangedBossMiss + hitRatings.debuff - math.max(0, hitRatings.ranged - rangedSuppression),
+			bossSuppression = rangedSuppression,
+		}
+	end
+
+	return table
 end
 
 function BCS:GetSpellHitRating()
