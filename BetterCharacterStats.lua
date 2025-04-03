@@ -593,6 +593,62 @@ function BCS:SetMeleeCritChance(statFrame)
 	label:SetText(L.MELEE_CRIT_COLON)
 	local melee_crit = BCS:GetCritChance()
 	text:SetText(format("%.2f%%", melee_crit))
+
+	local playerLevel = BCS.player.level
+
+	local weaponSkills = BCS:GetWeaponSkills()
+	local mainHandBossCritSuppression = BCS:GetCritSuppression((playerLevel + 3) * 5, weaponSkills.main_hand.total, playerLevel)
+	local mainHandBossCritChance = melee_crit - mainHandBossCritSuppression
+
+	BCS:GetMissChance()
+	BCS:GetTargetDodgeChance()
+	BCS:GetTargetBlockChance()
+	BCS:GEtTargetParryChance()
+
+	frame:SetScript("OnEnter", function()
+		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
+		GameTooltip:SetText(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Main Hand"))
+		BCS:AddDoubleLine("Crit Chance:", format("%.2f%%", melee_crit))
+		BCS:AddDoubleLine("Crit Suppression (vs Boss):", mainHandBossCritSuppression.."%")
+		BCS:AddDoubleLine("Crit Chance (vs Boss):", mainHandBossCritChance.."%")
+		BCS:AddDoubleLine("Crit Cap (vs Boss Front):", )
+		BCS:AddDoubleLine("Crit Cap (vs Boss Behind):")
+
+		--if weaponSkills.off_hand then
+		--	local mainHandAbilityMissChance = math.max(0, mainHandMissChance - melee_hit)
+		--	local mainHandBossAbilityMissChance = math.max(0, mainHandBossMissChance - math.max(0, melee_hit - hitSuppression))
+		--
+		--	GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Yellow Attacks"))
+		--	BCS:AddDoubleLine("Miss Chance (vs Boss):", mainHandBossAbilityMissChance.."%")
+		--	BCS:AddDoubleLine(format("Miss Chance (vs level %d):", playerLevel), mainHandAbilityMissChance.."%")
+		--	GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Auto attacks"))
+		--end
+		--
+		--BCS:AddDoubleLine("Miss Chance (vs Boss):", mainHandBossAutoMissChance.."%")
+		--BCS:AddDoubleLine(format("Miss Chance (vs level %d):", playerLevel), mainHandAutoMissChance.."%")
+		--
+		--if weaponSkills.off_hand then
+		--	local offHandModifier = weaponSkills.off_hand.temp+weaponSkills.off_hand.modifier
+		--	local offHandMissChance = BCS:GetMissChance(playerLevel * 5, weaponSkills.off_hand.total) + hit_debuff + dualWieldPenalty
+		--	local offHandBossMissChance, hitSuppression = BCS:GetMissChance((playerLevel + 3) * 5, weaponSkills.off_hand.total)
+		--	offHandBossMissChance = offHandBossMissChance + hit_debuff + dualWieldPenalty
+		--
+		--	offHandMissChance = math.max(0, offHandMissChance - melee_hit)
+		--	offHandBossMissChance = math.max(0, offHandBossMissChance - math.max(0, melee_hit - hitSuppression))
+		--
+		--	GameTooltip:AddLine(" ")
+		--	GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Off Hand"))
+		--	BCS:AddDoubleLine(format("Weapon skill (%s):", weaponSkills.off_hand.type), BCS:ModifierText(offHandModifier, weaponSkills.off_hand.skill, weaponSkills.off_hand.total))
+		--	BCS:AddDoubleLine("Hit Chance:", BCS:ModifierTextPercent(hit_debuff*-1, melee_hit, hitTotal))
+		--	BCS:AddDoubleLine("Hit Suppression (vs Boss):", hitSuppression.."%")
+		--	BCS:AddDoubleLine("Miss Chance (vs Boss):", offHandBossMissChance.."%")
+		--	BCS:AddDoubleLine(format("Miss Chance (vs level %d):", playerLevel), offHandMissChance.."%")
+		--end
+		GameTooltip:Show()
+	end)
+	frame:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
 end
 
 function BCS:SetGlancingBlow(statFrame)

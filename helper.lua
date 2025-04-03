@@ -407,6 +407,45 @@ function BCS:GetCritChance()
 	return melee_crit, ranged_crit
 end
 
+function BCS:GetCritSuppression(targetDefense, attackerSkill, attackerLevel)
+	local baseSkill = math.min(attackerLevel * 5, attackerSkill)
+	local diffSkill = baseSkill - targetDefense
+
+	local critSuppression = 0
+	if diffSkill < 0 then
+		critSuppression = critSuppression + diffSkill * 0.2 -- 3% suppression vs bosses
+
+		if diffSkill <= -15 then
+			critSuppression = critSuppression + diffSkill * 0.12 -- 1.8% suppression to auras vs bosses
+		end
+
+		if attackerSkill > baseSkill then
+			critSuppression = critSuppression + (baseSkill - attackerSkill) * 0.04 -- bonus weapon skill suppression
+		end
+	end
+
+	return critSuppression * -1
+end
+
+function BCS:GetTargetDodgeChance(targetDefense, attackerSkill)
+	return 5 + (targetDefense - attackerSkill) * 0.1
+end
+
+function BCS:GetTargetBlockChance(targetDefense, attackerSkill)
+	return math.min(5, 5 + (targetDefense - attackerSkill) * 0.1)
+end
+
+function BCS:GEtTargetParryChance(targetDefense, attackerSkill)
+	local diffSkill = targetDefense - attackerSkill
+	local parry = diffSkill * 0.1
+
+	if diffSkill >= 10 then
+		parry = parry + 7.5 -- boss parry chance is 14%
+	end
+
+	return parry
+end
+
 function BCS:GetSpellCritChance()
 	-- school crit: most likely never
 	local Crit_Set_Bonus = {}
