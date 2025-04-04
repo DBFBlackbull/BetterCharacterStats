@@ -286,7 +286,7 @@ function BCS:GetWeaponSkills()
 	return table
 end
 
-function BCS:GetGlancingBlow(targetDefense, attackerSkill, attackerLevel)
+local function getGlancingBlow(targetDefense, attackerSkill, attackerLevel)
 	local skillDiff = targetDefense - attackerSkill
 	local glanceChance = 10 + (targetDefense - math.min(attackerLevel * 5, attackerSkill)) * 2
 
@@ -299,6 +299,41 @@ function BCS:GetGlancingBlow(targetDefense, attackerSkill, attackerLevel)
 
 	local glancePenalty = (1 - (glanceHighEnd + glanceLowEnd) / 2) * 100
 	return glanceChance, glancePenalty
+end
+
+function BCS:GetGlancingBlows(weaponSkills)
+	local levelChance, levelPenalty = getGlancingBlow(BCS.player.levelDefense, weaponSkills.main_hand.total, BCS.player.level)
+	local bossChance, bossPenalty = getGlancingBlow(BCS.player.bossDefense, weaponSkills.main_hand.total, BCS.player.level)
+
+	local table = {}
+	table.main_hand = {
+		level  = {
+			chance = levelChance,
+			penalty = levelPenalty,
+		},
+		boss = {
+			chance = bossChance,
+			penalty = bossPenalty,
+		},
+	}
+
+	if weaponSkills.off_hand then
+		local offHandLevelChance, offHandLevelPenalty = getGlancingBlow(BCS.player.levelDefense, weaponSkills.main_hand.total, BCS.player.level)
+		local offHandBossChance, offHandBossPenalty = getGlancingBlow(BCS.player.bossDefense, weaponSkills.main_hand.total, BCS.player.level)
+
+		table.off_hand = {
+			level = {
+				chance = offHandLevelChance,
+				penalty = offHandLevelPenalty
+			},
+			boss = {
+				chance = offHandBossChance,
+				penalty = offHandBossPenalty
+			}
+		}
+	end
+
+	return table
 end
 
 local function getMissChance(targetDefense, attackerSkill)
@@ -323,8 +358,8 @@ function BCS:GetMissChances(weaponSkills, hitRatings)
 
 	local dualWieldPenalty = weaponSkills.off_hand and 19 or 0
 
-	local mainHandMiss = getMissChance(BCS.player.level * 5, weaponSkills.main_hand.total)
-	local mainHandBossMiss, mainHandSuppression = getMissChance((BCS.player.level + 3) * 5, weaponSkills.main_hand.total)
+	local mainHandMiss = getMissChance(BCS.player.levelDefense, weaponSkills.main_hand.total)
+	local mainHandBossMiss, mainHandSuppression = getMissChance(BCS.player.bossDefense, weaponSkills.main_hand.total)
 
 	table.main_hand = {
 		yellowVsLevel = math.max(0, mainHandMiss     + hitRatings.debuff - hitRatings.melee),
@@ -335,8 +370,8 @@ function BCS:GetMissChances(weaponSkills, hitRatings)
 	}
 
 	if weaponSkills.off_hand then
-		local offhandMiss = getMissChance(BCS.player.level * 5, weaponSkills.off_hand.total)
-		local offHandBossMiss, offHandSuppression = getMissChance((BCS.player.level + 3) * 5, weaponSkills.off_hand.total)
+		local offhandMiss = getMissChance(BCS.player.levelDefense, weaponSkills.off_hand.total)
+		local offHandBossMiss, offHandSuppression = getMissChance(BCS.player.bossDefense, weaponSkills.off_hand.total)
 
 		table.off_hand = {
 			autoVsLevel = math.max(0, offhandMiss     + hitRatings.debuff + dualWieldPenalty - hitRatings.melee),
@@ -346,8 +381,8 @@ function BCS:GetMissChances(weaponSkills, hitRatings)
 	end
 
 	if weaponSkills.ranged then
-		local rangedMiss = getMissChance(BCS.player.level * 5, weaponSkills.ranged.total)
-		local rangedBossMiss, rangedSuppression = getMissChance((BCS.player.level + 3) * 5, weaponSkills.ranged.total)
+		local rangedMiss = getMissChance(BCS.player.levelDefense, weaponSkills.ranged.total)
+		local rangedBossMiss, rangedSuppression = getMissChance(BCS.player.bossDefense, weaponSkills.ranged.total)
 
 		table.ranged = {
 			yellowVsLevel = rangedMiss     + hitRatings.debuff - hitRatings.ranged,
@@ -439,7 +474,7 @@ local function getSpellBookCrit()
 	end
 end
 
-function BCS:GetCritChance()
+function BCS:GetSpellBookCritChance()
 	local melee_crit = getSpellBookCrit()
 	local ranged_crit = melee_crit
 
@@ -452,8 +487,8 @@ function BCS:GetCritChance()
 	return melee_crit, ranged_crit
 end
 
-local function getCritSuppression(targetDefense, attackerSkill, attackerLevel)
-	local baseSkill = math.min(attackerLevel * 5, attackerSkill)
+local function getBossCritSuppression(targetDefense, attackerSkill)
+	local baseSkill = math.min(BCS.player.level * 5, attackerSkill)
 	local diffSkill = baseSkill - targetDefense
 
 	local critSuppression = 0
@@ -472,11 +507,12 @@ local function getCritSuppression(targetDefense, attackerSkill, attackerLevel)
 	return critSuppression * -1
 end
 
-function BCS:GetCritSuppressions(weaponSkills)
+function BCS:GetBossCritSuppressions(weaponSkills)
 	local table = {}
-	table.main_hand = {
+	table.main_hand = getBossCritSuppression(BCS.player.bossDefense, weaponSkills.main_hand.total)
+	table.off_hand  = getBossCritSuppression(BCS.player.bossDefense, weaponSkills.off_hand.total)
 
-	}
+	return table
 end
 
 local function getTargetDodgeChance(targetDefense, attackerSkill)
@@ -486,14 +522,14 @@ end
 function BCS:GetTargetDodgeChances(weaponSkills)
 	local table = {}
 	table.main_hand = {
-		level = getTargetDodgeChance(BCS.player.level * 5, weaponSkills.main_hand.total),
-		boss  = getTargetDodgeChance((BCS.player.level + 3) * 5, weaponSkills.main_hand.total),
+		level = getTargetDodgeChance(BCS.player.levelDefense, weaponSkills.main_hand.total),
+		boss  = getTargetDodgeChance(BCS.player.bossDefense, weaponSkills.main_hand.total),
 	}
 
 	if weaponSkills.off_hand then
 		table.off_hand = {
-			level = getTargetDodgeChance(BCS.player.level * 5, weaponSkills.off_hand.total),
-			boss  = getTargetDodgeChance((BCS.player.level + 3) * 5, weaponSkills.off_hand.total),
+			level = getTargetDodgeChance(BCS.player.levelDefense, weaponSkills.off_hand.total),
+			boss  = getTargetDodgeChance(BCS.player.bossDefense, weaponSkills.off_hand.total),
 		}
 	end
 
@@ -507,14 +543,14 @@ end
 function BCS:GetTargetBlockChances(weaponSkills)
 	local table = {}
 	table.main_hand = {
-		level = getTargetBlockChance(BCS.player.level * 5, weaponSkills.main_hand.total),
-		boss  = getTargetBlockChance((BCS.player.level + 3) * 5, weaponSkills.main_hand.total),
+		level = getTargetBlockChance(BCS.player.levelDefense, weaponSkills.main_hand.total),
+		boss  = getTargetBlockChance(BCS.player.bossDefense, weaponSkills.main_hand.total),
 	}
 
 	if weaponSkills.off_hand then
 		table.off_hand = {
-			level = getTargetBlockChance(BCS.player.level * 5, weaponSkills.off_hand.total),
-			boss  = getTargetBlockChance((BCS.player.level + 3) * 5, weaponSkills.off_hand.total),
+			level = getTargetBlockChance(BCS.player.levelDefense, weaponSkills.off_hand.total),
+			boss  = getTargetBlockChance(BCS.player.bossDefense, weaponSkills.off_hand.total),
 		}
 	end
 
@@ -536,14 +572,14 @@ end
 function BCS:GetTargetParryChanges(weaponSkills)
 	local table = {}
 	table.main_hand = {
-		level = getTargetParryChance(BCS.player.level * 5, weaponSkills.main_hand.total),
-		boss  = getTargetParryChance((BCS.player.level + 3) * 5, weaponSkills.main_hand.total),
+		level = getTargetParryChance(BCS.player.levelDefense, weaponSkills.main_hand.total),
+		boss  = getTargetParryChance(BCS.player.bossDefense, weaponSkills.main_hand.total),
 	}
 
 	if weaponSkills.off_hand then
 		table.off_hand = {
-			level = getTargetParryChance(BCS.player.level * 5, weaponSkills.off_hand.total),
-			boss  = getTargetParryChance((BCS.player.level + 3) * 5, weaponSkills.off_hand.total),
+			level = getTargetParryChance(BCS.player.levelDefense, weaponSkills.off_hand.total),
+			boss  = getTargetParryChance(BCS.player.bossDefense, weaponSkills.off_hand.total),
 		}
 	end
 

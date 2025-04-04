@@ -81,6 +81,9 @@ function BCS:OnLoad()
 	self.player = {
 		name = UnitName("player"),
 		class = unitClass,
+		level = 0,
+		levelDefense = 0,
+		bossDefense = 0
 	}
 end
 
@@ -114,10 +117,15 @@ function BCS:OnEvent()
 
 	if event == "PLAYER_ENTERING_WORLD" then
 		BCS.player.level = UnitLevel("player")
+		BCS.player.levelDefense = BCS.player.level * 5
+		BCS.player.bossDefense = (BCS.player.level + 3) * 5
+		return
 	end
 
 	if event == "PLAYER_LEVEL_UP" then
 		BCS.player.level = arg1
+		BCS.player.levelDefense = BCS.player.level * 5
+		BCS.player.bossDefense =  (BCS.player.level + 3) * 5
 	end
 end
 
@@ -566,60 +574,75 @@ function BCS:SetMeleeCritChance(statFrame)
 	local frame = statFrame 
 	local text = getglobal(statFrame:GetName() .. "StatText")
 	local label = getglobal(statFrame:GetName() .. "Label")
-	
+
 	label:SetText(L.MELEE_CRIT_COLON)
-	local melee_crit = BCS:GetCritChance()
+	local melee_crit = BCS:GetSpellBookCritChance()
 	text:SetText(format("%.2f%%", melee_crit))
+	-- TODO check off hand crit chance
 
 	local weaponSkills = BCS:GetWeaponSkills()
 	local hitRatings = BCS:GetHitRatings()
-	local mainHandBossCritSuppression = BCS:GetCritSuppression((playerLevel + 3) * 5, weaponSkills.main_hand.total, playerLevel)
-	local mainHandBossCritChance = melee_crit - mainHandBossCritSuppression
-
 	local missChanges = BCS:GetMissChances(weaponSkills, hitRatings)
 	local targetDodgeChanges = BCS:GetTargetDodgeChances(weaponSkills)
+	local targetParryChanges = BCS:GetTargetParryChanges(weaponSkills)
+	local glancingBlows = BCS:GetGlancingBlows(weaponSkills)
 	local targetBlockChanges = BCS:GetTargetBlockChances(weaponSkills)
-	local targetParryChanges = BCS:GEtTargetParryChances(weaponSkills)
+	local critSuppressions = BCS:GetBossCritSuppressions(weaponSkills)
 
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 		GameTooltip:SetText(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Main Hand"))
 		BCS:AddDoubleLine(format("Crit Chance (vs level %d):", BCS.player.level), format("%.2f%%", melee_crit))
-		BCS:AddDoubleLine("Crit Suppression (vs Boss):", mainHandBossCritSuppression.."%")
-		BCS:AddDoubleLine("Crit Chance (vs Boss):", mainHandBossCritChance.."%")
-		BCS:AddDoubleLine("Crit Cap (vs Boss Front):", )
-		BCS:AddDoubleLine("Crit Cap (vs Boss Behind):")
+		BCS:AddDoubleLine("Crit Suppression (vs Boss):", critSuppressions.main_hand.."%")
+		BCS:AddDoubleLine("Crit Chance (vs Boss):", melee_crit - critSuppressions.main_hand.."%")
 
-		--if weaponSkills.off_hand then
-		--	local mainHandAbilityMissChance = math.max(0, mainHandMissChance - melee_hit)
-		--	local mainHandBossAbilityMissChance = math.max(0, mainHandBossMissChance - math.max(0, melee_hit - hitSuppression))
-		--
-		--	GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Yellow Attacks"))
-		--	BCS:AddDoubleLine("Miss Chance (vs Boss):", mainHandBossAbilityMissChance.."%")
-		--	BCS:AddDoubleLine(format("Miss Chance (vs level %d):", playerLevel), mainHandAbilityMissChance.."%")
-		--	GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Auto attacks"))
-		--end
-		--
-		--BCS:AddDoubleLine("Miss Chance (vs Boss):", mainHandBossAutoMissChance.."%")
-		--BCS:AddDoubleLine(format("Miss Chance (vs level %d):", playerLevel), mainHandAutoMissChance.."%")
-		--
-		--if weaponSkills.off_hand then
-		--	local offHandModifier = weaponSkills.off_hand.temp+weaponSkills.off_hand.modifier
-		--	local offHandMissChance = BCS:GetMissChance(playerLevel * 5, weaponSkills.off_hand.total) + hit_debuff + dualWieldPenalty
-		--	local offHandBossMissChance, hitSuppression = BCS:GetMissChance((playerLevel + 3) * 5, weaponSkills.off_hand.total)
-		--	offHandBossMissChance = offHandBossMissChance + hit_debuff + dualWieldPenalty
-		--
-		--	offHandMissChance = math.max(0, offHandMissChance - melee_hit)
-		--	offHandBossMissChance = math.max(0, offHandBossMissChance - math.max(0, melee_hit - hitSuppression))
-		--
-		--	GameTooltip:AddLine(" ")
-		--	GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Off Hand"))
-		--	BCS:AddDoubleLine(format("Weapon skill (%s):", weaponSkills.off_hand.type), BCS:ModifierText(offHandModifier, weaponSkills.off_hand.skill, weaponSkills.off_hand.total))
-		--	BCS:AddDoubleLine("Hit Chance:", BCS:ModifierTextPercent(hit_debuff*-1, melee_hit, hitTotal))
-		--	BCS:AddDoubleLine("Hit Suppression (vs Boss):", hitSuppression.."%")
-		--	BCS:AddDoubleLine("Miss Chance (vs Boss):", offHandBossMissChance.."%")
-		--	BCS:AddDoubleLine(format("Miss Chance (vs level %d):", playerLevel), offHandMissChance.."%")
-		--end
+		if weaponSkills.off_hand then
+			GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Yellow Attacks"))
+			local mainHandCritCapBehind = 100
+					- missChanges.main_hand.yellowVsBoss
+					- targetDodgeChanges.main_hand.boss
+					- glancingBlows.main_hand.boss.chance
+
+			local mainHandCritCapFront = mainHandCritCapBehind
+					- targetParryChanges.main_hand.boss
+					- targetBlockChanges.main_hand.boss
+
+			BCS:AddDoubleLine("Crit Cap (vs Boss Front):", mainHandCritCapFront.."%")
+			BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", mainHandCritCapBehind.."%")
+			GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Auto attacks"))
+		end
+		local mainHandCritCapBehind = 100
+				- missChanges.main_hand.autoVsBoss
+				- targetDodgeChanges.main_hand.boss
+				- glancingBlows.main_hand.boss.chance
+
+		local mainHandCritCapFront = mainHandCritCapBehind
+				- targetParryChanges.main_hand.boss
+				- targetBlockChanges.main_hand.boss
+
+		BCS:AddDoubleLine("Crit Cap (vs Boss Front):", mainHandCritCapFront.."%")
+		BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", mainHandCritCapBehind.."%")
+
+		if weaponSkills.off_hand then
+			GameTooltip:AddLine(" ")
+			GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Off Hand"))
+			BCS:AddDoubleLine(format("Crit Chance (vs level %d):", BCS.player.level), format("%.2f%%", melee_crit))
+			BCS:AddDoubleLine("Crit Suppression (vs Boss):", critSuppressions.off_hand.."%")
+			BCS:AddDoubleLine("Crit Chance (vs Boss):", melee_crit - critSuppressions.off_hand.."%")
+
+			local offHandCritCapBehind = 100
+					- missChanges.off_hand.autoVsBoss
+					- targetDodgeChanges.off_hand.boss
+					- glancingBlows.off_hand.boss.chance
+
+			local offHandCritCapFront = offHandCritCapBehind
+					- targetParryChanges.off_hand.boss
+					- targetBlockChanges.off_hand.boss
+
+			BCS:AddDoubleLine("Crit Cap (vs Boss Front):", offHandCritCapFront.."%")
+			BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", offHandCritCapBehind.."%")
+		end
+
 		GameTooltip:Show()
 	end)
 	frame:SetScript("OnLeave", function()
@@ -632,16 +655,12 @@ function BCS:SetGlancingBlow(statFrame)
 	local text = getglobal(statFrame:GetName() .. "StatText")
 	local label = getglobal(statFrame:GetName() .. "Label")
 
-	local targetDefense = (BCS.player.level+3)*5
-
 	local weaponSkills = BCS:GetWeaponSkills()
-	local mainHandGlanceChance, mainHandGlancePen = BCS:GetGlancingBlow(targetDefense, weaponSkills.main_hand.total, BCS.player.level)
-	local colonValue = format("%d%%", mainHandGlancePen)
+	local glancingBlows = BCS:GetGlancingBlows(weaponSkills)
+	local colonValue = format("%d%%", glancingBlows.main_hand.boss.penalty)
 
-	local offHandGlanceChance, offHandGlancePen
-	if weaponSkills.off_hand then
-		offHandGlanceChance, offHandGlancePen = BCS:GetGlancingBlow(targetDefense, weaponSkills.off_hand.total, BCS.player.level)
-		colonValue = format("%s / %d%%", colonValue, offHandGlancePen)
+	if glancingBlows.off_hand then
+		colonValue = format("%s / %d%%", colonValue, glancingBlows.off_hand.boss.penalty)
 	end
 
 	label:SetText(L.MELEE_GLANCING_BLOW_COLON)
@@ -655,15 +674,15 @@ function BCS:SetGlancingBlow(statFrame)
 		GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Main Hand"))
 		local mainHandModifier = weaponSkills.main_hand.modifier+weaponSkills.main_hand.temp
 		BCS:AddDoubleLine(format("Weapon skill (%s):", weaponSkills.main_hand.type), BCS:ModifierText(mainHandModifier, weaponSkills.main_hand.skill, weaponSkills.main_hand.total))
-		BCS:AddDoubleLine("Glancing Blow Chance (vs Boss):", format("%.1f%%",mainHandGlanceChance))
-		BCS:AddDoubleLine("Glancing Blow Penalty (vs Boss):", format("%.1f%%",mainHandGlancePen))
+		BCS:AddDoubleLine("Glancing Blow Chance (vs Boss):", format("%.1f%%",glancingBlows.main_hand.boss.chance))
+		BCS:AddDoubleLine("Glancing Blow Penalty (vs Boss):", format("%.1f%%",glancingBlows.main_hand.boss.penalty))
 		if weaponSkills.off_hand then
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Off Hand"))
 			local offHandModifier = weaponSkills.off_hand.modifier+weaponSkills.off_hand.temp
 			BCS:AddDoubleLine(format("Weapon skill (%s):", weaponSkills.off_hand.type), BCS:ModifierText(offHandModifier, weaponSkills.off_hand.skill, weaponSkills.off_hand.total))
-			BCS:AddDoubleLine("Glancing Blow Chance (vs Boss):", format("%.1f%%",offHandGlanceChance))
-			BCS:AddDoubleLine("Glancing Blow Penalty (vs Boss):", format("%.1f%%",offHandGlancePen))
+			BCS:AddDoubleLine("Glancing Blow Chance (vs Boss):", format("%.1f%%",glancingBlows.off_hand.boss.chance))
+			BCS:AddDoubleLine("Glancing Blow Penalty (vs Boss):", format("%.1f%%",glancingBlows.off_hand.boss.penalty))
 		end
 		GameTooltip:Show()
 	end)
@@ -692,7 +711,7 @@ function BCS:SetRangedCritChance(statFrame)
 		return
 	end
 
-	local _, ranged_crit = BCS:GetCritChance()
+	local _, ranged_crit = BCS:GetSpellBookCritChance()
 	text:SetText(format("%.2f%%", ranged_crit))
 end
 
@@ -825,7 +844,7 @@ function BCS:SetRangedDamage(statFrame)
 
 	if ( totalBonus == 0 ) then
 		if ( ( displayMin < 100 ) and ( displayMax < 100 ) ) then 
-			damageText:SetText(displayMin.." - "..displayMax)	
+			damageText:SetText(displayMin.." - "..displayMax)
 		else
 			damageText:SetText(displayMin.."-"..displayMax)
 		end
