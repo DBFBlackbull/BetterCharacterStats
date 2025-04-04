@@ -318,8 +318,8 @@ function BCS:GetGlancingBlows(weaponSkills)
 	}
 
 	if weaponSkills.off_hand then
-		local offHandLevelChance, offHandLevelPenalty = getGlancingBlow(BCS.player.levelDefense, weaponSkills.main_hand.total, BCS.player.level)
-		local offHandBossChance, offHandBossPenalty = getGlancingBlow(BCS.player.bossDefense, weaponSkills.main_hand.total, BCS.player.level)
+		local offHandLevelChance, offHandLevelPenalty = getGlancingBlow(BCS.player.levelDefense, weaponSkills.off_hand.total, BCS.player.level)
+		local offHandBossChance, offHandBossPenalty = getGlancingBlow(BCS.player.bossDefense, weaponSkills.off_hand.total, BCS.player.level)
 
 		table.off_hand = {
 			level = {
@@ -474,17 +474,43 @@ local function getSpellBookCrit()
 	end
 end
 
-function BCS:GetSpellBookCritChance()
-	local melee_crit = getSpellBookCrit()
-	local ranged_crit = melee_crit
+local function getCritChance(baseCrit, weaponSkill)
+	local diffSkill = weaponSkill - BCS.player.levelDefense
+	if diffSkill > 0 then
+		return baseCrit + diffSkill * 0.04
+	end
 
+	if diffSkill < 0 then
+		return baseCrit + diffSkill * 0.2
+	end
+
+	return baseCrit
+end
+
+function BCS:GetCritChances(weaponSkills)
+	local spellBookCrit = getSpellBookCrit()
+
+	local table = {}
+	table.main_hand = spellBookCrit
+
+	-- calculating crit at max weapon skill for given level without bonuses
+	local weaponSkillCrit = getCritChance(spellBookCrit, weaponSkills.main_hand.total)
+	local baseCrit = spellBookCrit + (spellBookCrit - weaponSkillCrit)
+
+	if weaponSkills.off_hand then
+		table.off_hand = getCritChance(baseCrit, weaponSkills.off_hand.total)
+	end
+
+	if weaponSkills.ranged then
+		table.ranged = getCritChance(baseCrit, weaponSkills.ranged.total)
+	end
 
 	if BCS.player.class == 'HUNTER' then
 		local _, _, _, _, rank = GetTalentInfo(2, 4) -- Marksmanship, Lethal Shots
-		ranged_crit = ranged_crit + rank
+		table.ranged = table.ranged + rank
 	end
 
-	return melee_crit, ranged_crit
+	return table
 end
 
 local function getBossCritSuppression(targetDefense, attackerSkill)

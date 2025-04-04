@@ -575,12 +575,18 @@ function BCS:SetMeleeCritChance(statFrame)
 	local text = getglobal(statFrame:GetName() .. "StatText")
 	local label = getglobal(statFrame:GetName() .. "Label")
 
+	local weaponSkills = BCS:GetWeaponSkills()
+
 	label:SetText(L.MELEE_CRIT_COLON)
-	local melee_crit = BCS:GetSpellBookCritChance()
-	text:SetText(format("%.2f%%", melee_crit))
+	local critChances = BCS:GetCritChances(weaponSkills)
+	local colonValue = format("%.2f%%", critChances.main_hand)
+
+	if critChances.off_hand then
+		colonValue = format("%s / %.2f%%", colonValue, critChances.off_hand)
+	end
+	text:SetText(colonValue)
 	-- TODO check off hand crit chance
 
-	local weaponSkills = BCS:GetWeaponSkills()
 	local hitRatings = BCS:GetHitRatings()
 	local missChanges = BCS:GetMissChances(weaponSkills, hitRatings)
 	local targetDodgeChanges = BCS:GetTargetDodgeChances(weaponSkills)
@@ -592,9 +598,9 @@ function BCS:SetMeleeCritChance(statFrame)
 	frame:SetScript("OnEnter", function()
 		GameTooltip:SetOwner(this, "ANCHOR_RIGHT")
 		GameTooltip:SetText(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Main Hand"))
-		BCS:AddDoubleLine(format("Crit Chance (vs level %d):", BCS.player.level), format("%.2f%%", melee_crit))
-		BCS:AddDoubleLine("Crit Suppression (vs Boss):", critSuppressions.main_hand.."%")
-		BCS:AddDoubleLine("Crit Chance (vs Boss):", melee_crit - critSuppressions.main_hand.."%")
+		BCS:AddDoubleLine(format("Crit Chance (vs level %d):", BCS.player.level), format("%.2f%%", critChances.main_hand))
+		BCS:AddDoubleLine("Crit Suppression (vs Boss):", format("%.2f%%", critSuppressions.main_hand))
+		BCS:AddDoubleLine("Crit Chance (vs Boss):", format("%.2f%%", critChances.main_hand - critSuppressions.main_hand))
 
 		if weaponSkills.off_hand then
 			GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Yellow Attacks"))
@@ -607,8 +613,8 @@ function BCS:SetMeleeCritChance(statFrame)
 					- targetParryChanges.main_hand.boss
 					- targetBlockChanges.main_hand.boss
 
-			BCS:AddDoubleLine("Crit Cap (vs Boss Front):", mainHandCritCapFront.."%")
-			BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", mainHandCritCapBehind.."%")
+			BCS:AddDoubleLine("Crit Cap (vs Boss Front):", format("%.2f%%",mainHandCritCapFront))
+			BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", format("%.2f%%",mainHandCritCapBehind))
 			GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Auto attacks"))
 		end
 		local mainHandCritCapBehind = 100
@@ -620,15 +626,15 @@ function BCS:SetMeleeCritChance(statFrame)
 				- targetParryChanges.main_hand.boss
 				- targetBlockChanges.main_hand.boss
 
-		BCS:AddDoubleLine("Crit Cap (vs Boss Front):", mainHandCritCapFront.."%")
-		BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", mainHandCritCapBehind.."%")
+		BCS:AddDoubleLine("Crit Cap (vs Boss Front):", format("%.2f%%",mainHandCritCapFront))
+		BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", format("%.2f%%",mainHandCritCapBehind))
 
 		if weaponSkills.off_hand then
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Off Hand"))
-			BCS:AddDoubleLine(format("Crit Chance (vs level %d):", BCS.player.level), format("%.2f%%", melee_crit))
-			BCS:AddDoubleLine("Crit Suppression (vs Boss):", critSuppressions.off_hand.."%")
-			BCS:AddDoubleLine("Crit Chance (vs Boss):", melee_crit - critSuppressions.off_hand.."%")
+			BCS:AddDoubleLine(format("Crit Chance (vs level %d):", BCS.player.level), format("%.2f%%", critChances.off_hand))
+			BCS:AddDoubleLine("Crit Suppression (vs Boss):", format("%.2f%%", critSuppressions.off_hand))
+			BCS:AddDoubleLine("Crit Chance (vs Boss):", format("%.2f%%", critChances.off_hand - critSuppressions.off_hand))
 
 			local offHandCritCapBehind = 100
 					- missChanges.off_hand.autoVsBoss
@@ -639,8 +645,8 @@ function BCS:SetMeleeCritChance(statFrame)
 					- targetParryChanges.off_hand.boss
 					- targetBlockChanges.off_hand.boss
 
-			BCS:AddDoubleLine("Crit Cap (vs Boss Front):", offHandCritCapFront.."%")
-			BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", offHandCritCapBehind.."%")
+			BCS:AddDoubleLine("Crit Cap (vs Boss Front):", format("%.2f%%", offHandCritCapFront))
+			BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", format("%.2f%%", offHandCritCapBehind))
 		end
 
 		GameTooltip:Show()
@@ -711,8 +717,8 @@ function BCS:SetRangedCritChance(statFrame)
 		return
 	end
 
-	local _, ranged_crit = BCS:GetSpellBookCritChance()
-	text:SetText(format("%.2f%%", ranged_crit))
+	local critChances = BCS:GetCritChances(weaponSkills)
+	text:SetText(format("%.2f%%", critChances.ranged))
 end
 
 function BCS:SetHealing(statFrame)
