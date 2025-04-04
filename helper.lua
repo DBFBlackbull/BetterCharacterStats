@@ -510,7 +510,9 @@ end
 function BCS:GetBossCritSuppressions(weaponSkills)
 	local table = {}
 	table.main_hand = getBossCritSuppression(BCS.player.bossDefense, weaponSkills.main_hand.total)
-	table.off_hand  = getBossCritSuppression(BCS.player.bossDefense, weaponSkills.off_hand.total)
+	if weaponSkills.off_hand then
+		table.off_hand  = getBossCritSuppression(BCS.player.bossDefense, weaponSkills.off_hand.total)
+	end
 
 	return table
 end
