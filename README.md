@@ -33,7 +33,7 @@ Thanks to:
 - 1.11
   - Original Fork from yutsuku/BetterCharacterStats
 - 1.12
-  - Reads Melee and Spell hit from Nature's Guideance talent
+  - Reads Melee and Spell hit from Nature's Guidance talent
 - 1.12.1
   - Fixed melee and ranged attack power tooltip
 - 1.12.2
@@ -48,7 +48,12 @@ Thanks to:
   - No longer adds melee hit to ranged hit
   - Correctly calculates miss chance factoring in weapon skill
   - Calculates miss for at level and bosses
-  - Calculates hit chance suppression
+  - Calculates hit chance suppression for bosses
   - Show all information for main hand, off hand, and ranged
 - 1.12.4
   - Added Glancing blow for boss monsters to melee statistics
+- 1.12.5
+  - Correctly calculates crit chance factoring in weapon skill
+  - Calculate crit suppression for bosses
+  - Calculate crit cap for at level and bosses
+  - Corrected Weapon skill calculation for Druids in Bear, Car, Aquatic, and Travel form.
