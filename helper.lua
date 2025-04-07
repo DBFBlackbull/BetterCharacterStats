@@ -245,6 +245,20 @@ function BCS:GetWeaponSkills()
 		main_hand_type = "Unarmed"
 	end
 
+	if BCS.player.class == "DRUID" then
+		BCS:IterateAuras(AURA_BUFF, function(lineText)
+			local bearForm = strfind(lineText, L["Bear Form"]) -- also matches Dire Bear form
+			local catForm = strfind(lineText, L["Cat Form"])
+			local aquaticForm = strfind(lineText, L["Aquatic Form"])
+			local travelForm = strfind(lineText, L["Travel Form"])
+
+			if bearForm or catForm or aquaticForm or travelForm then
+				main_hand_type = "Feral Combat"
+				return
+			end
+		end)
+	end
+
 	local off_hand_type = BCS:GetWeaponSkillNameForSlot(17)
 	local ranged_type = BCS:GetWeaponSkillNameForSlot(18)
 
