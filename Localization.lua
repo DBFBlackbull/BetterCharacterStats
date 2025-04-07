@@ -57,7 +57,13 @@ BCS["L"] = {
 	["Equip: Increases damage and healing done by magical spells and effects by up to (%d+)."] = "Equip: Increases damage and healing done by magical spells and effects by up to (%d+).",
 	["Equip: Increases healing done by spells and effects by up to (%d+)."] = "Equip: Increases healing done by spells and effects by up to (%d+).",
 	
-	-- auras
+	-- auras, buffs
+	-- ZG Madness trinkets
+	["Holy spell critical hit chance increased by (%d+)%%."] = "Holy spell critical hit chance increased by (%d+)%%.", -- Brilliant Light (24498) (Paladin)
+	["Destruction spell critical hit chance increased by (%d+)%%."] = "Destruction spell critical hit chance increased by (%d+)%%.", -- Massive Destruction (24543) (Warlock)
+	["Arcane spell critical hit chance increased by (%d+)%%.\r\nArcane spell critical hit damage increased by (%d+)%%."] = "Arcane spell critical hit chance increased by (%d+)%%.\r\nArcane spell critical hit damage increased by (%d+)%%.", -- Arcane Potency (24544) (Mage)
+	["Critical strike chance with spells and melee attacks increased by (%d+)%%."] = "Critical strike chance with spells and melee attacks increased by (%d+)%%.", -- Sanctified Orb (24865) (Paladin level 50 ST Quest)
+
 	["Spell damage increased by up to (%d+)."] =													"Spell damage increased by up to (%d+).", -- Flask of supreme power
 	["Magical damage dealt is increased by up to (%d+)."] = 										"Magical damage dealt is increased by up to (%d+).", -- Very Berry cream
 	["Magical damage dealt by spells and abilities is increased by up to (%d+)."] = 				"Magical damage dealt by spells and abilities is increased by up to (%d+).", -- Arcane elixir
@@ -68,35 +74,30 @@ BCS["L"] = {
 	["Nature damage dealt by spells and abilities is increased by up to (%d+)."] = 					"Nature damage dealt by spells and abilities is increased by up to (%d+).",
 	["Shadow damage dealt by spells and abilities is increased by up to (%d+)."] = 					"Shadow damage dealt by spells and abilities is increased by up to (%d+).", -- Shadow power elixir
 	["Healing done by magical spells is increased by up to (%d+)."] = 								"Healing done by magical spells is increased by up to (%d+).",
-	["Increases frost damage done by (%d+)"] = "Increases frost damage done by (%d+)", -- Blessing of Blackfathom
+	["Increases frost damage done by (%d+)"] = "Increases frost damage done by (%d+)", -- Blessing of Blackfathom (techically a debuff, but effect is a buff)
 
 	["Chance to hit increased by (%d)%%."] = 														"Chance to hit increased by (%d)%%.",
 	["Chance to hit reduced by (%d+)%%."] = 														"Chance to hit reduced by (%d+)%%.",
 	["Chance to hit decreased by (%d+)%% and %d+ Nature damage every %d+ sec."] = 					"Chance to hit decreased by (%d+)%% and %d+ Nature damage every %d+ sec.",
-	["Lowered chance to hit."] = 																	"Lowered chance to hit.", -- 5917	Fumble (25%)
-	["Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds."] = 	"Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds.",
 	["Gain (%d+) mana every 2 seconds."] = 															"Gain (%d+) mana every 2 seconds.", -- Mana spring totem
 	["Restores (%d+) mana every 5 seconds."] = 														"Restores (%d+) mana every 5 seconds.", -- Blessing of Wisdom
-	["Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds."] = 	"Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds.",
 	["Improves your chance to hit by (%d+)%%."] = 													"Improves your chance to hit by (%d+)%%.",
 	["Chance for a critical hit with a spell increased by (%d+)%%."] = 								"Chance for a critical hit with a spell increased by (%d+)%%.",
-	["While active, target's critical hit chance with spells and attacks increases by 10%%."] = 	"While active, target's critical hit chance with spells and attacks increases by 10%%.",
-	["Increases attack power by %d+ and chance to hit by (%d+)%%."] = 								"Increases attack power by %d+ and chance to hit by (%d+)%%.",
-	["Holy spell critical hit chance increased by (%d+)%%."] = 										"Holy spell critical hit chance increased by (%d+)%%.",
-	["Destruction spell critical hit chance increased by (%d+)%%."] = 								"Destruction spell critical hit chance increased by (%d+)%%.",
-	["Arcane spell critical hit chance increased by (%d+)%%.\r\nArcane spell critical hit damage increased by (%d+)%%."] = "Arcane spell critical hit chance increased by (%d+)%%.\r\nArcane spell critical hit damage increased by (%d+)%%.",
+	["While active, target's critical hit chance with spells and attacks increases by 10%%."] = 	"While active, target's critical hit chance with spells and attacks increases by 10%%.", -- Bloodrager's Requiem (23964)
+	["Increases attack power by %d+ and chance to hit by (%d+)%%."] = 								"Increases attack power by %d+ and chance to hit by (%d+)%%.", -- Devilsaur Fury (24352)
 	["Spell hit chance increased by (%d+)%%."] = 													"Spell hit chance increased by (%d+)%%.",
 	["Bear Form"] = 																				"Bear Form",
 	["Cat Form"] =	 																				"Cat Form",
 	["Aquatic Form"] =																				"Aquatic Form",
 	["Travel Form"] =																				"Travel Form",
 
-	["Increases chance for a melee, ranged, or spell critical by (%d+)%% and all attributes by %d+."] = "Increases chance for a melee, ranged, or spell critical by (%d+)%% and all attributes by %d+.",
-	["Melee critical-hit chance reduced by (%d+)%%.\r\nSpell critical-hit chance reduced by (%d+)%%."] = "Melee critical-hit chance reduced by (%d+)%%.\r\nSpell critical-hit chance reduced by (%d+)%%.",
-	["Increases critical chance of spells by 10%%, melee and ranged by 5%% and grants 140 attack power. 120 minute duration."] = "Increases critical chance of spells by 10%%, melee and ranged by 5%% and grants 140 attack power. 120 minute duration.",
-	["Holy spell critical hit chance increased by (%d+)%%."] = "Holy spell critical hit chance increased by (%d+)%%.",
-	["Destruction spell critical hit chance increased by (%d+)%%."] = "Destruction spell critical hit chance increased by (%d+)%%.",
-	["Critical strike chance with spells and melee attacks increased by (%d+)%%."] = "Critical strike chance with spells and melee attacks increased by (%d+)%%.",
+	["Increases chance for a melee, ranged, or spell critical by (%d+)%% and all attributes by %d+."] = "Increases chance for a melee, ranged, or spell critical by (%d+)%% and all attributes by %d+.", -- Songflower Serenade
+	["Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds."] = 	"Increases hitpoints by 300. 15%% haste to melee attacks. 10 mana regen every 5 seconds.", -- Warchief's Blessing
+	["Increases critical chance of spells by 10%%, melee and ranged by 5%% and grants 140 attack power. 120 minute duration."] = "Increases critical chance of spells by 10%%, melee and ranged by 5%% and grants 140 attack power. 120 minute duration.", -- Rallying Cry of the Dragonslayer
+
+	-- auras, debuffs
+	["Lowered chance to hit."] = 																		"Lowered chance to hit.", -- 5917	Fumble (25%)
+	["Melee critical-hit chance reduced by (%d+)%%.\r\nSpell critical-hit chance reduced by (%d+)%%."] = "Melee critical-hit chance reduced by (%d+)%%.\r\nSpell critical-hit chance reduced by (%d+)%%.", -- Festering Bites (16460)
 
 	["MELEE_ATTACK_POWER_TOOLTIP"] = "Increase damage with melee weapons by %.1f damage per second.",
 	["RANGED_ATTACK_POWER_TOOLTIP"] = "Increase damage with ranged weapons by %.1f damage per second.",
