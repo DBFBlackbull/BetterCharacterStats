@@ -247,7 +247,7 @@ function BCS:GetWeaponSkills()
 
 	if BCS.player.class == "DRUID" then
 		BCS:IterateAuras(AURA_BUFF, function(lineText)
-			local bearForm = strfind(lineText, L["Bear Form"]) -- also matches Dire Bear form
+			local bearForm = strfind(lineText, L["Bear Form"]) -- also matches Dire Bear Form
 			local catForm = strfind(lineText, L["Cat Form"])
 			local aquaticForm = strfind(lineText, L["Aquatic Form"])
 			local travelForm = strfind(lineText, L["Travel Form"])
