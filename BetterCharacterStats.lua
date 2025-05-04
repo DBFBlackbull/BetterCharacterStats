@@ -613,8 +613,8 @@ function BCS:SetMeleeCritChance(statFrame)
 					- targetParryChanges.main_hand.boss
 					- targetBlockChanges.main_hand.boss
 
-			BCS:AddDoubleLine("Crit Cap (vs Boss Front):", format("%.2f%%",mainHandCritCapFront))
 			BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", format("%.2f%%",mainHandCritCapBehind))
+			BCS:AddDoubleLine("Crit Cap (vs Boss Front):", format("%.2f%%",mainHandCritCapFront))
 			GameTooltip:AddLine(BCS:ColorText(HIGHLIGHT_FONT_COLOR_CODE, "Auto attacks"))
 		end
 		local mainHandCritCapBehind = 100
@@ -626,8 +626,8 @@ function BCS:SetMeleeCritChance(statFrame)
 				- targetParryChanges.main_hand.boss
 				- targetBlockChanges.main_hand.boss
 
-		BCS:AddDoubleLine("Crit Cap (vs Boss Front):", format("%.2f%%",mainHandCritCapFront))
 		BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", format("%.2f%%",mainHandCritCapBehind))
+		BCS:AddDoubleLine("Crit Cap (vs Boss Front):", format("%.2f%%",mainHandCritCapFront))
 
 		if weaponSkills.off_hand then
 			GameTooltip:AddLine(" ")
@@ -645,8 +645,8 @@ function BCS:SetMeleeCritChance(statFrame)
 					- targetParryChanges.off_hand.boss
 					- targetBlockChanges.off_hand.boss
 
-			BCS:AddDoubleLine("Crit Cap (vs Boss Front):", format("%.2f%%", offHandCritCapFront))
 			BCS:AddDoubleLine("Crit Cap (vs Boss Behind):", format("%.2f%%", offHandCritCapBehind))
+			BCS:AddDoubleLine("Crit Cap (vs Boss Front):", format("%.2f%%", offHandCritCapFront))
 		end
 
 		GameTooltip:Show()
