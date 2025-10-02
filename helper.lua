@@ -265,14 +265,15 @@ function BCS:GetWeaponSkills()
 	local off_hand_type = BCS:GetWeaponSkillNameForSlot(17)
 	local ranged_type = BCS:GetWeaponSkillNameForSlot(18)
 
-	BCS:Print(main_hand_type)
-
 	local table = {}
 	local MAX_SKILLS = GetNumSkillLines()
 	for skill = 0, MAX_SKILLS do
 		local skillName, _, _, skillRank, numTempPoints, skillModifier = GetSkillLineInfo(skill)
 		if skillName and skillName == main_hand_type then
-			if skillName == "Feral Combat" then
+			-- On official Classic servers Class Skills level up when you do.
+			-- In TBC Class skills was changed to always be gray and have a level of 1
+			-- Many private servers use this TBC core so this hack simulates the actual skill level
+			if skillName == "Feral Combat" and skillRank < 5 then
 				skillRank = BCS.player.level * 5
 				table.main_hand = {
 					type = main_hand_type,
@@ -312,6 +313,28 @@ function BCS:GetWeaponSkills()
 			}
 		end
 	end
+
+	-- Skinning Knife, Blacksmith Hammer, Mining Pick, Arclight Spanner
+	local skillRank = 1
+	if main_hand_type == "Miscellaneous" then
+		table.main_hand = {
+			type = main_hand_type,
+			skill = skillRank,
+			temp = 0,
+			modifier = 0,
+			total = skillRank
+		}
+	end
+	if off_hand_type == "Miscellaneous" then
+		table.main_hand = {
+			type = off_hand_type,
+			skill = skillRank,
+			temp = 0,
+			modifier = 0,
+			total = skillRank
+		}
+	end
+	-- Skipping ranged_type as Idols, Librams, Totems, and Egan's Blaster cannot be used as a ranged weapon
 
 	return table
 end
