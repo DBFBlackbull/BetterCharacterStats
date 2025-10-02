@@ -221,6 +221,23 @@ function BCS:GetItemIDFromLink(itemLink)
 end
 
 function BCS:GetWeaponSkillNameForSlot(slotId)
+	local weaponType
+	if BCS.player.class == "DRUID" and slotId == 16 then
+		BCS:IterateAuras(AURA_BUFF, function(lineText)
+			local bearForm = strfind(lineText, L["Bear Form"]) -- also matches Dire Bear Form
+			local catForm = strfind(lineText, L["Cat Form"])
+			local aquaticForm = strfind(lineText, L["Aquatic Form"])
+			local travelForm = strfind(lineText, L["Travel Form"])
+
+			if bearForm or catForm or aquaticForm or travelForm then
+				weaponType = "Feral Combat"
+			end
+		end)
+		if weaponType then
+			return weaponType
+		end
+	end
+
 	local itemLink = GetInventoryItemLink("player", slotId)
 	if not itemLink then
 		return
@@ -245,35 +262,34 @@ function BCS:GetWeaponSkills()
 		main_hand_type = "Unarmed"
 	end
 
-	if BCS.player.class == "DRUID" then
-		BCS:IterateAuras(AURA_BUFF, function(lineText)
-			local bearForm = strfind(lineText, L["Bear Form"]) -- also matches Dire Bear Form
-			local catForm = strfind(lineText, L["Cat Form"])
-			local aquaticForm = strfind(lineText, L["Aquatic Form"])
-			local travelForm = strfind(lineText, L["Travel Form"])
-
-			if bearForm or catForm or aquaticForm or travelForm then
-				main_hand_type = "Feral Combat"
-				return
-			end
-		end)
-	end
-
 	local off_hand_type = BCS:GetWeaponSkillNameForSlot(17)
 	local ranged_type = BCS:GetWeaponSkillNameForSlot(18)
+
+	BCS:Print(main_hand_type)
 
 	local table = {}
 	local MAX_SKILLS = GetNumSkillLines()
 	for skill = 0, MAX_SKILLS do
 		local skillName, _, _, skillRank, numTempPoints, skillModifier = GetSkillLineInfo(skill)
 		if skillName and skillName == main_hand_type then
-			table.main_hand = {
-				type = main_hand_type,
-				skill = skillRank,
-				temp = numTempPoints,
-				modifier = skillModifier,
-				total = skillRank + numTempPoints + skillModifier
-			}
+			if skillName == "Feral Combat" then
+				skillRank = BCS.player.level * 5
+				table.main_hand = {
+					type = main_hand_type,
+					skill = skillRank,
+					temp = 0,
+					modifier = 0,
+					total = skillRank
+				}
+			else
+				table.main_hand = {
+					type = main_hand_type,
+					skill = skillRank,
+					temp = numTempPoints,
+					modifier = skillModifier,
+					total = skillRank + numTempPoints + skillModifier
+				}
+			end
 		end
 
 		if skillName and skillName == off_hand_type then
